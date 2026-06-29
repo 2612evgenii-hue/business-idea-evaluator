@@ -203,6 +203,36 @@ business-idea-evaluator/
 
 ---
 
+## Проверка работоспособности
+
+Все файлы используют LF-переносы и проходят синтаксические проверки. Воспровести можно одной командой:
+
+```bash
+cd business-idea-evaluator
+bash tests/run_checks.sh
+```
+
+Ожидаемый вывод (фрагмент):
+
+```
+== 1. Python syntax (calculate_brs.py) ==  PASS
+== 3. Bash syntax (install-agents.sh) ==   PASS
+== 5. BRS computation (sample) == BRS base=49.3 range=41.9-56.7 verdict=REFORMULATE
+== 8. Risk-direction regression == safe=0.80 risky=0.10 unsafe=0.20  PASS
+== 9. Blocking cap (legal_safety=2 -> cap 35) == cap applied, base = 35  PASS
+ALL CHECKS PASSED
+```
+
+Отдельные команды:
+
+```bash
+python3 -m py_compile business-idea-evaluator/scripts/calculate_brs.py
+bash -n business-idea-evaluator/scripts/install-agents.sh
+python3 business-idea-evaluator/scripts/calculate_brs.py business-idea-evaluator/references/example-input.json
+```
+
+> Примечание: если открывать raw-файлы через некоторые инструменты предпросмотра, переносы строк могут «схлопываться» в одну строку — это артефакт рендеринга, а не содержимого. В git-блобе хранятся корректные LF-переносы (проверяется `git show HEAD:.../SKILL.md`).
+
 ## Требования
 
 - Python 3.8+ (для `calculate_brs.py`, только стандартная библиотека)
