@@ -17,6 +17,9 @@ JSON agent_id "09". scores: legal_safety, platform_stability, ethical_cleanlines
 math_params: blocking_legal_risk (0 or 1 if idea may be illegal/blocked).
 List what NOT to do in MVP.
 
+## Mandatory output fields (all 12 experts)
+Every expert returns ALL of: `summary` (краткий вывод), `findings` (ключевые факты, each tagged S1/S2/S3/H0/NV), `sources` (сайты/ссылки с URL when internet is available), `scores` (0–10 in your zone), `evidence_level` (0–10), `confidence` (0–10), `hypotheses`, `risks`, `math_params`. A missing field = incomplete output.
+
 ## Critical
 - Return ONLY valid JSON (no markdown fences, no commentary).
 - Follow schema in business-idea-evaluator skill references/expert-evidence-package.md

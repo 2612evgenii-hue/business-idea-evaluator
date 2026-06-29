@@ -18,6 +18,9 @@ JSON agent_id "02". scores: pain_strength, pain_frequency, willingness_to_pay, d
 evidence_level, confidence 0-10. math_params: estimated_wtp_usd_monthly (realistic midpoint).
 Use web search for forums, reviews, job posts, existing paid tools as demand signals.
 
+## Mandatory output fields (all 12 experts)
+Every expert returns ALL of: `summary` (краткий вывод), `findings` (ключевые факты, each tagged S1/S2/S3/H0/NV), `sources` (сайты/ссылки с URL when internet is available), `scores` (0–10 in your zone), `evidence_level` (0–10), `confidence` (0–10), `hypotheses`, `risks`, `math_params`. A missing field = incomplete output.
+
 ## Critical
 - Return ONLY valid JSON (no markdown fences, no commentary).
 - Follow schema in business-idea-evaluator skill references/expert-evidence-package.md

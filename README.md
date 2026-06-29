@@ -72,14 +72,22 @@ flowchart TD
 
 ## Business Reality Score
 
-Итог — **не среднее арифметическое** (оно скрывает блокирующие риски) и не «сырое» произведение (девять множителей < 1 схлопывают результат в ноль), а **геометрическое среднее** девяти факторов, нормированное в 0–100, с последующими блокирующими ограничениями:
+Итог — **не среднее арифметическое** (оно скрывает блокирующие риски) и не «сырое» произведение (девять множителей < 1 схлопывают результат в ноль), а **взвешенное геометрическое среднее** девяти факторов, нормированное в 0–100, с последующими блокирующими ограничениями:
 
 ```
-BRS = geomean(BasePotential, EvidenceFactor, SourceQuality, Execution, Money,
-              Defense, Durability, RiskMultiplier, SensitivityMultiplier) × 100
+BRS = 100 × weighted_geomean(BasePotential, EvidenceFactor, SourceQuality, Execution,
+                            Money, Defense, Durability, RiskMultiplier, SensitivityMultiplier)
 ```
+
+Веса смещены туда, где провал решает исход (Money и RiskMultiplier — 1.4, BasePotential — 1.3). Дополнительно:
+
+- **Money** гасится unit-экономикой агента 16 (отношение LTV/CAC, маржа, срок окупаемости) — при `LTV < CAC` фактор падает.
+- **SourceQuality** ограничен 0.3, если источников нет или `internet_available=false`.
+- **Risk** строится на максимуме рисков, причём safety-оценки (`legal_safety` — выше=лучше) и risk-оценки (`failure_risk` — выше=хуже) сначала приводятся к одному направлению, и только потом сравниваются.
 
 Один очень низкий фактор всё равно резко тянет оценку вниз, а жёсткие блокировки применяются отдельно (см. ниже). Расчёт детерминирован — его делает `calculate_brs.py`, а не модель «на глаз».
+
+Скрипт возвращает: `base/min/max`, `confidence`, `evidence_index`, `source_quality_index`, флаг `hypothetical`, `blocking_caps_applied`, `main_blocking_risk`, `main_growth_factor`, `main_uncertainty_factor`, девять `factors`, `probability_map` и `warnings` по входу.
 
 **Блокирующие ограничения** (примеры):
 
@@ -137,7 +145,34 @@ npx skills add 2612evgenii-hue/business-idea-evaluator
 | Cursor | `.cursor/skills/`, `.agents/skills/` | `.cursor/agents/` |
 | Codex | `.codex/skills/`, `.agents/skills/` | `.codex/agents/` |
 
-Скрипт `install-agents.sh` раскладывает 18 субагентов по `.cursor/agents/`, `.claude/agents/`, `.codex/agents/` и пользовательским каталогам `~/.*/agents/`.
+Скрипт `install-agents.sh` раскладывает 18 субагентов: **Markdown** в `.cursor/agents/`, `.claude/agents/`, `.agents/agents/`, а для Codex **генерирует native TOML** в `.codex/agents/` через `build_codex_agents.py`.
+
+### Установка в Claude Code
+
+1. Скопируйте папку `business-idea-evaluator/` в `.claude/skills/` (проект) или `~/.claude/skills/` (глобально). Имя папки = `name` в `SKILL.md`.
+2. `bash business-idea-evaluator/scripts/install-agents.sh` — разложит субагентов в `.claude/agents/`.
+3. Claude активирует skill по `description`, когда вы просите оценить бизнес-идею.
+
+### Установка в Cursor
+
+1. Файл правила уже лежит в [`.cursor/rules/business-idea-evaluator.mdc`](.cursor/rules/business-idea-evaluator.mdc) (project rule, тип «Agent Requested»: подключается, когда агент видит запрос на оценку идеи).
+2. Скопируйте `business-idea-evaluator/` в `.agents/skills/` и выполните `bash business-idea-evaluator/scripts/install-agents.sh` — субагенты попадут в `.cursor/agents/`.
+3. Проверьте, что правило видно в Cursor Settings → Rules. Markdown-субагенты Cursor читает напрямую.
+
+### Установка в Codex
+
+1. Codex читает `AGENTS.md` из корня репозитория автоматически.
+2. Сгенерируйте native TOML-субагентов (или просто запустите общий установщик):
+
+```bash
+python3 business-idea-evaluator/scripts/build_codex_agents.py .codex/agents
+# или
+bash business-idea-evaluator/scripts/install-agents.sh
+```
+
+3. Codex **не запускает субагентов сам** — попросите явно: «spawn 12 expert agents in parallel», затем «spawn 6 math agents in parallel». Модель/режим наследуются из сессии; expert-агенты помечены `sandbox_mode = "read-only"`.
+
+> Полностью универсального формата субагентов между платформами нет: Cursor/Claude используют Markdown+YAML, Codex — TOML. Поэтому канонический источник — Markdown в `agents/`, а TOML для Codex генерируется из него. Это честная адаптация под каждую платформу, а не «один файл на всех».
 
 ---
 
@@ -163,33 +198,79 @@ npx skills add 2612evgenii-hue/business-idea-evaluator
 
 ```bash
 # из папки business-idea-evaluator/
-python3 scripts/validate_input.py examples/sample-input.json
-python3 scripts/calculate_brs.py examples/sample-input.json
+python3 scripts/validate_evidence_package.py references/example-input.json
+python3 scripts/calculate_brs.py references/example-input.json
 ```
 
-Готовый пример входного файла — [`examples/sample-input.json`](business-idea-evaluator/examples/sample-input.json); схема и формула — в [`references/scoring-formula.md`](business-idea-evaluator/references/scoring-formula.md).
+Готовый пример входа — [`references/example-input.json`](business-idea-evaluator/references/example-input.json), готовый выход — [`references/example-output.json`](business-idea-evaluator/references/example-output.json). Машиночитаемая JSON Schema входа — [`references/evidence-package.schema.json`](business-idea-evaluator/references/evidence-package.schema.json); формула — в [`references/scoring-formula.md`](business-idea-evaluator/references/scoring-formula.md).
+
+Если установлен `jsonschema`, валидатор дополнительно проверяет вход по схеме:
+
+```bash
+pip install jsonschema   # опционально — иначе работает встроенная проверка
+python3 scripts/validate_evidence_package.py references/example-input.json
+```
+
+### Как выглядит вход и выход
+
+Вход (фрагмент):
+
+```json
+{
+  "idea_brief": "Telegram-бот для поиска проверенных подрядчиков...",
+  "internet_available": true,
+  "experts": { "02": {"scores": {"pain_strength": 7, "willingness_to_pay": 5, "demand_proof": 4}, "sources": [{"url": "https://..."}]} },
+  "math": { "13": {"evidence_index": 4, "source_quality_index": 5}, "16": {"scenarios": {"realistic": {"cac": 600, "ltv": 900}}} }
+}
+```
+
+Выход (фрагмент):
+
+```json
+{
+  "business_reality_score": {"base": 47.2, "min": 40.1, "max": 54.3, "confidence": "medium", "verdict_code": "REFORMULATE"},
+  "evidence_index": 4.0,
+  "hypothetical": false,
+  "main_blocking_risk": "failure_risk = 6/10",
+  "main_growth_factor": "execution",
+  "main_uncertainty_factor": "Готовность платить за подбор не доказана"
+}
+```
 
 ---
 
 ## Структура
 
 ```
-business-idea-evaluator/
-├── SKILL.md                       # оркестратор (5 фаз)
-├── agents/                        # 18 субагентов
-│   ├── biz-eval-01-analog-research.md
-│   ├── ...
-│   └── biz-eval-18-experiments.md
-├── references/
-│   ├── discovery-protocol.md      # 5 вопросов
-│   ├── expert-evidence-package.md # JSON-схемы
-│   ├── scoring-formula.md         # формула BRS + блокирующие правила
-│   ├── report-template.md         # шаблон отчёта
-│   ├── evidence-status.md         # градация источников
-│   └── forbidden-phrases.md       # запрещённые фразы
-└── scripts/
-    ├── calculate_brs.py           # математический слой (обязателен)
-    └── install-agents.sh          # установка субагентов
+.
+├── AGENTS.md                          # инструкции для Codex/Claude/Cursor (корень репо)
+├── .cursor/rules/
+│   └── business-idea-evaluator.mdc    # Cursor project rule
+└── business-idea-evaluator/
+    ├── SKILL.md                       # оркестратор (5 фаз)
+    ├── agents/                        # 18 субагентов (Markdown)
+    │   ├── biz-eval-01-analog-research.md
+    │   ├── ...
+    │   └── biz-eval-18-experiments.md
+    ├── references/
+    │   ├── discovery-protocol.md          # 5 вопросов
+    │   ├── expert-evidence-package.md     # per-agent JSON-схемы
+    │   ├── evidence-package.schema.json   # JSON Schema входа (draft-07)
+    │   ├── scoring-formula.md             # формула BRS + блокирующие правила
+    │   ├── report-template.md             # шаблон отчёта
+    │   ├── evidence-status.md             # градация источников
+    │   ├── forbidden-phrases.md           # запрещённые фразы
+    │   ├── example-input.json             # пример входа
+    │   └── example-output.json            # пример выхода
+    ├── scripts/
+    │   ├── calculate_brs.py               # математический слой (обязателен)
+    │   ├── validate_evidence_package.py   # валидатор входа (+ JSON Schema)
+    │   ├── validate_input.py              # обратная совместимость (alias)
+    │   ├── build_codex_agents.py          # генерация Codex TOML из Markdown
+    │   └── install-agents.sh              # установка субагентов
+    └── tests/
+        ├── test_brs.py                    # pytest (10 проверок)
+        └── run_checks.sh                  # полный quality gate
 ```
 
 ---
@@ -217,25 +298,42 @@ bash tests/run_checks.sh
 ```
 == 1. Python syntax (calculate_brs.py) ==  PASS
 == 3. Bash syntax (install-agents.sh) ==   PASS
-== 5. BRS computation (sample) == BRS base=49.3 range=41.9-56.7 verdict=REFORMULATE
-== 8. Risk-direction regression == safe=0.80 risky=0.10 unsafe=0.20  PASS
-== 9. Blocking cap (legal_safety=2 -> cap 35) == cap applied, base = 35  PASS
+== 5. BRS computation (example) == BRS base=47.2 range=40.1-54.3 verdict=REFORMULATE
+== 8. Codex TOML generation (18 agents) == PASS (18 toml)
+== 9. Risk-direction regression == safe=0.50 risky=0.10 unsafe=0.20  PASS
+== 10. Blocking cap (legal_safety=2 -> cap 35) == cap applied, base = 35  PASS
+== 11. pytest suite == 10 passed  PASS
 ALL CHECKS PASSED
 ```
 
-Отдельные команды:
+Отдельные команды (quality gate, запускать из корня репозитория):
 
 ```bash
 python3 -m py_compile business-idea-evaluator/scripts/calculate_brs.py
 bash -n business-idea-evaluator/scripts/install-agents.sh
+python3 business-idea-evaluator/scripts/validate_evidence_package.py business-idea-evaluator/references/example-input.json
 python3 business-idea-evaluator/scripts/calculate_brs.py business-idea-evaluator/references/example-input.json
+pytest
 ```
 
 > Примечание: если открывать raw-файлы через некоторые инструменты предпросмотра, переносы строк могут «схлопываться» в одну строку — это артефакт рендеринга, а не содержимого. В git-блобе хранятся корректные LF-переносы (проверяется `git show HEAD:.../SKILL.md`).
 
+## Ограничения (honest limitations)
+
+Скилл — это **decision-support**, а не оракул. Чего он принципиально **не** делает:
+
+- **Не гарантирует успех бизнеса.** BRS — вероятностная оценка при текущих данных, не предсказание.
+- **Без интернета свежие данные не проверяются.** При `internet_available=false` рыночные выводы помечаются как гипотезы, а Source Quality ограничивается.
+- **Без реальных продаж итог остаётся гипотезой.** Готовность платить доказывается деньгами, а не оценками агентов.
+- **BRS зависит от качества входных данных.** Мусор на входе → мусор на выходе; поэтому есть валидатор и пометки доказательности.
+- **Математическая модель не заменяет эксперименты.** Агент 18 даёт план проверок именно потому, что расчёт не заменяет рынок.
+- **Веса и блокировки — экспертная калибровка**, а не объективная истина; их можно и нужно пересматривать под конкретный домен.
+- **Итог нельзя трактовать как абсолют.** Это инструмент для решения «тестировать / переформулировать / не запускать», а не приговор.
+
 ## Требования
 
 - Python 3.8+ (для `calculate_brs.py`, только стандартная библиотека)
+- `pytest` — для запуска тестов; `jsonschema` — опционально, для проверки входа по JSON Schema
 - Claude Code, Cursor (2.4+) или Codex с поддержкой субагентов
 - Доступ к веб-поиску — желателен (без него выводы помечаются как гипотезы)
 

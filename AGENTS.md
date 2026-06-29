@@ -15,7 +15,7 @@ A cross-platform Agent Skill that evaluates business ideas objectively through 1
 5. Phase 4: validate then score:
 
 ```bash
-python3 business-idea-evaluator/scripts/validate_input.py biz-eval-input.json
+python3 business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
 python3 business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
 ```
 
@@ -24,22 +24,32 @@ python3 business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
 ## Hard rules
 
 - Never evaluate before the idea is confirmed.
-- Never use arithmetic mean for the final score — only `calculate_brs.py` (geometric mean + blocking caps).
+- Never use arithmetic mean for the final score — only `calculate_brs.py` (weighted geometric mean + blocking caps).
 - Never flatter; see `business-idea-evaluator/references/forbidden-phrases.md`.
 - If web search is unavailable, mark market claims as hypotheses and cap source quality.
 
 ## Codex note on subagents
 
-Codex custom subagents are typically TOML in `.codex/agents/`. This skill ships subagents as
-Agent-Skills-standard Markdown (`agents/*.md` with YAML frontmatter: `name`, `description`,
-`model`, `readonly`). In Codex these files are read as the role definitions the orchestrator
-applies per phase. If your Codex version requires native TOML subagents, the same `name` +
-instruction body map directly to `name` + `developer_instructions`.
+Codex custom subagents are native TOML in `.codex/agents/` with required fields
+`name`, `description`, `developer_instructions`. This skill keeps the canonical
+subagents as Agent-Skills Markdown (`agents/*.md`) and **generates** the Codex TOML
+from them via `scripts/build_codex_agents.py`. `install-agents.sh` calls this
+automatically for any `.codex/agents` directory, so Codex gets real native TOML
+subagents (not a copy of Markdown). To regenerate manually:
+
+```bash
+python3 business-idea-evaluator/scripts/build_codex_agents.py .codex/agents
+```
+
+Subagents are spawned per phase (12 expert, then 6 math). Prompt Codex explicitly
+to "spawn N agents in parallel" — Codex does not auto-spawn subagents.
 
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/validate_input.py` | Validate merged input JSON before scoring |
+| `scripts/validate_evidence_package.py` | Validate merged input JSON (+ JSON Schema if `jsonschema` installed) |
+| `scripts/validate_input.py` | Backward-compatible alias for the validator |
 | `scripts/calculate_brs.py` | Authoritative BRS computation |
-| `scripts/install-agents.sh` | Copy 18 subagents into platform agent dirs |
+| `scripts/build_codex_agents.py` | Generate native Codex TOML subagents from Markdown |
+| `scripts/install-agents.sh` | Install 18 subagents into Cursor/Claude (MD) and Codex (TOML) dirs |

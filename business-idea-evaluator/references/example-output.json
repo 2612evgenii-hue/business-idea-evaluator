@@ -1,0 +1,54 @@
+{
+  "business_reality_score": {
+    "base": 47.2,
+    "min": 40.1,
+    "max": 54.3,
+    "confidence": "medium",
+    "verdict_code": "REFORMULATE"
+  },
+  "evidence_index": 4.0,
+  "source_quality_index": 5.0,
+  "hypothetical": false,
+  "blocking_caps_applied": [],
+  "main_blocking_risk": "failure_risk = 6/10",
+  "main_growth_factor": "execution",
+  "main_uncertainty_factor": "Готовность платить за подбор не доказана",
+  "factors": {
+    "base_potential": 0.565,
+    "evidence_factor": 0.4,
+    "source_quality": 0.5,
+    "execution": 0.665,
+    "money": 0.3412,
+    "defense": 0.315,
+    "durability": 0.57,
+    "risk_multiplier": 0.4,
+    "sensitivity_multiplier": 0.7
+  },
+  "probability_map": {
+    "total_failure_pct": 35,
+    "small_service_income_pct": 30,
+    "sustainable_business_pct": 20,
+    "scalable_business_pct": 8,
+    "external_death_pct": 7
+  },
+  "scenarios": {
+    "pessimistic": {
+      "description": "Никто не платит за подбор",
+      "probability_pct": 35
+    },
+    "base": {
+      "description": "Малый сервисный доход в одном городе",
+      "probability_pct": 40
+    },
+    "optimistic": {
+      "description": "Устойчивый локальный сервис",
+      "probability_pct": 18
+    },
+    "stress": {
+      "description": "Агрегатор копирует фичу",
+      "probability_pct": 7
+    }
+  },
+  "warnings": [],
+  "formula": "BRS = 100 × weighted_geomean(base_potential, evidence_factor, source_quality, execution, money, defense, durability, risk_multiplier, sensitivity_multiplier), then blocking caps"
+}

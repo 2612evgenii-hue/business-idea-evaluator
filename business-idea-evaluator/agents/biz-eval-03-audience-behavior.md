@@ -20,6 +20,9 @@ User vs buyer vs payer vs decision-maker vs sufferer.
 ## Output
 JSON agent_id "03". scores: audience_access, sales_difficulty, decision_speed.
 
+## Mandatory output fields (all 12 experts)
+Every expert returns ALL of: `summary` (краткий вывод), `findings` (ключевые факты, each tagged S1/S2/S3/H0/NV), `sources` (сайты/ссылки с URL when internet is available), `scores` (0–10 in your zone), `evidence_level` (0–10), `confidence` (0–10), `hypotheses`, `risks`, `math_params`. A missing field = incomplete output.
+
 ## Critical
 - Return ONLY valid JSON (no markdown fences, no commentary).
 - Follow schema in business-idea-evaluator skill references/expert-evidence-package.md

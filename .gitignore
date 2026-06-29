@@ -3,6 +3,12 @@ biz-eval-input.json
 biz-eval-evidence.json
 *.tmp
 
+# Installed/generated subagents at repo root (source lives in business-idea-evaluator/agents)
+/.codex/agents/
+/.claude/agents/
+/.cursor/agents/
+/.agents/
+
 # Python
 __pycache__/
 *.pyc

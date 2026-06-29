@@ -96,7 +96,11 @@ Collect all 12 JSON outputs. Merge into `Expert Evidence Package` (single JSON f
 
 ## Phase 3 — Math layer (6 subagents)
 
-Launch **all 6 in parallel** after Expert Evidence Package is complete.
+Launch **all 6 in parallel** after Expert Evidence Package is complete. Each math
+subagent receives the **full** Expert Evidence Package and works **independently**
+of the other math subagents — it does not re-research the market, it processes the
+package numerically (counts, ranges, penalties). Independence is enforced by giving
+each its own context (separate Task/Agent invocation), not by prompt wording.
 
 | Agent | Input | Role |
 |-------|-------|------|
@@ -119,17 +123,23 @@ Do not re-research market — process the package mathematically.
 
 ## Phase 4 — Deterministic BRS calculation
 
-1. Merge expert scores + math agent outputs into `biz-eval-input.json` (see [references/scoring-formula.md](references/scoring-formula.md)).
+1. Merge expert scores + math agent outputs into `biz-eval-input.json` (see [references/scoring-formula.md](references/scoring-formula.md); structure defined in [references/evidence-package.schema.json](references/evidence-package.schema.json)).
 2. Validate, then score:
 
 ```bash
-python3 scripts/validate_input.py biz-eval-input.json
+python3 scripts/validate_evidence_package.py biz-eval-input.json
 python3 scripts/calculate_brs.py biz-eval-input.json
 ```
 
 3. Use script output as **authoritative** Business Reality Score. Main agent explains results; does not override numbers.
 
-A worked example input is in `examples/sample-input.json`.
+The script returns: `base/min/max` BRS, `confidence`, `evidence_index`,
+`source_quality_index`, `hypothetical` flag, `blocking_caps_applied`,
+`main_blocking_risk`, `main_growth_factor`, `main_uncertainty_factor`, the nine
+`factors`, the `probability_map`, and input `warnings`.
+
+A worked input/output pair lives in `references/example-input.json` and
+`references/example-output.json` (also `examples/sample-input.json`).
 
 If script fails, fix JSON and retry. Do not invent score manually.
 
@@ -153,7 +163,10 @@ Agents live in skill bundle at `agents/`. Install to platform dirs:
 bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh
 ```
 
-Targets: `.cursor/agents/`, `.claude/agents/`, `.codex/agents/`, `~/.cursor/agents/`, `~/.claude/agents/` when writable.
+Targets (when writable): `.cursor/agents/`, `.claude/agents/`, `.agents/agents/` get
+Markdown; `.codex/agents/` and `~/.codex/agents/` get **native TOML** generated from
+the Markdown via `scripts/build_codex_agents.py`. User-level `~/.cursor/agents/` and
+`~/.claude/agents/` also receive Markdown.
 
 ## Resume / partial runs
 
@@ -162,8 +175,10 @@ If experts done but math pending: start Phase 3 only.
 
 ## References
 
-- [expert-evidence-package.md](references/expert-evidence-package.md) — JSON schemas
+- [expert-evidence-package.md](references/expert-evidence-package.md) — per-agent JSON schemas
+- [evidence-package.schema.json](references/evidence-package.schema.json) — machine-checkable JSON Schema for the merged input
 - [scoring-formula.md](references/scoring-formula.md) — BRS formula & blocking rules
 - [report-template.md](references/report-template.md) — final output format
 - [evidence-status.md](references/evidence-status.md) — source grading
 - [forbidden-phrases.md](references/forbidden-phrases.md) — banned language
+- [example-input.json](references/example-input.json) / [example-output.json](references/example-output.json) — worked example

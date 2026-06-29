@@ -4,21 +4,37 @@
 
 **No arithmetic mean.** The final number comes from `scripts/calculate_brs.py`.
 
-The model uses the **geometric mean** of all 9 factors, scaled to 0–100, then applies blocking caps:
+The model uses a **weighted geometric mean** of all 9 factors, scaled to 0–100, then applies blocking caps:
 
 ```
-BRS = geomean(BasePotential, EvidenceFactor, SourceQuality, Execution,
-              Money, Defense, Durability, RiskMultiplier, SensitivityMultiplier) × 100
+BRS = 100 × weighted_geomean(BasePotential, EvidenceFactor, SourceQuality, Execution,
+                             Money, Defense, Durability, RiskMultiplier, SensitivityMultiplier)
 ```
 
-Why geometric mean and not a raw product or arithmetic mean:
+Why a weighted geometric mean and not a raw product or arithmetic mean:
 - A raw product of nine sub-1.0 factors underflows toward 0 (a viable idea would score ~1/100).
 - An arithmetic mean hides blocking weaknesses (a fatal factor gets averaged away).
 - The geometric mean keeps the result in a usable 0–100 range, yet a single very low
   factor still drags the score down hard. Hard blocks are enforced separately via caps below.
 
+Factor weights (more pull where failure is most decisive):
+
+| Factor | Weight |
+|--------|--------|
+| Money | 1.4 |
+| RiskMultiplier | 1.4 |
+| BasePotential | 1.3 |
+| EvidenceFactor | 1.1 |
+| SensitivityMultiplier | 1.1 |
+| Execution | 1.0 |
+| SourceQuality | 0.9 |
+| Defense | 0.9 |
+| Durability | 0.9 |
+
 All factors are normalized to [0,1] internally. RiskMultiplier and SensitivityMultiplier are
-penalties in [0.1, 1.0]; the rest are potentials in [0,1].
+penalties in [0.1, 1.0]; the rest are potentials in [0,1]. **Money** is additionally gated by a
+unit-economics modifier from agent 16 (LTV/CAC ratio, gross margin, payback). **SourceQuality**
+is capped at 0.3 when no sources exist or `internet_available=false`.
 
 ## Factor definitions (0–1 internally)
 

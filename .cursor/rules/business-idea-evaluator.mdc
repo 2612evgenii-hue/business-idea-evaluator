@@ -1,0 +1,40 @@
+---
+description: Objective, evidence-based business idea evaluation via 18 subagents and a deterministic Business Reality Score. Apply when the user asks to evaluate, validate, score, or stress-test a business idea, startup concept, SaaS idea, side project, or monetization plan.
+alwaysApply: false
+---
+
+# Business Idea Evaluator — Cursor rule
+
+When the user asks to evaluate / validate / score / stress-test a business idea,
+follow the skill at `business-idea-evaluator/SKILL.md`. Do not improvise a verdict.
+
+## Hard rules
+
+1. **Do not evaluate before the idea is confirmed.** Run Phase 1 first: ask
+   **exactly 5** dependent clarifying questions, one per message, each depending
+   on the previous answer. Then output one dense `Я понял идею так: …` paragraph
+   and wait for explicit confirmation.
+2. **Use real subagents, not simulation.** Launch the 12 expert subagents
+   (`biz-eval-01..12`) in parallel via the Task/Agent tool, each in its own
+   context. Merge their JSON into the Expert Evidence Package. Then launch the 6
+   math subagents (`biz-eval-13..18`) in parallel on that package.
+3. **The score is computed, not opinion-based.** Build the merged input and run:
+   ```bash
+   python3 business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
+   python3 business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
+   ```
+   Use the script's BRS as authoritative. Never invent or average the score by hand.
+4. **No arithmetic mean** for the final score — the script uses a weighted
+   geometric mean plus blocking caps. Never flatter
+   (`business-idea-evaluator/references/forbidden-phrases.md`).
+5. **Mark evidence status** on every material claim. If web search is
+   unavailable, say so once and downgrade market claims to hypotheses.
+
+## Install subagents
+
+```bash
+bash business-idea-evaluator/scripts/install-agents.sh
+```
+
+Cursor agents land in `.cursor/agents/` (Markdown). See `AGENTS.md` and
+`business-idea-evaluator/README.md` for full details.

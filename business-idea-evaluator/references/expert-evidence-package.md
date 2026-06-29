@@ -1,6 +1,12 @@
 # Expert Evidence Package — JSON Schema
 
 Each expert agent returns **only** this JSON structure (no prose outside JSON).
+The machine-checkable JSON Schema for the merged package is
+[`evidence-package.schema.json`](evidence-package.schema.json); validate with
+`scripts/validate_evidence_package.py`.
+
+**Mandatory for all 12 experts:** `summary`, `findings`, `sources`, `scores`,
+`evidence_level`, `confidence`, `hypotheses`, `risks`, `math_params`.
 
 ## Common expert output schema
 

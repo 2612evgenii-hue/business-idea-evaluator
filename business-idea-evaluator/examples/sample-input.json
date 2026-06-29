@@ -1,25 +1,115 @@
 {
-  "idea_brief": "Telegram-бот для поиска проверенных подрядчиков по ремонту квартир в РФ; платит собственник жилья за доступ к подобранным мастерам с отзывами.",
+  "idea_brief": "Telegram-бот для поиска проверенных подрядчиков по ремонту квартир в РФ; платит собственник жилья за доступ к подобранным мастерам с отзывами и гарантией замены.",
+  "confirmed_at": "2026-06-29",
+  "internet_available": true,
+  "failed_agents": [],
   "experts": {
-    "01": {"scores": {"novelty": 3, "competition_saturation": 7, "search_confidence": 6}, "math_params": {"direct_analogs_count": 5, "substitutes_count": 8}},
-    "02": {"scores": {"pain_strength": 7, "pain_frequency": 3, "willingness_to_pay": 5, "demand_proof": 4}, "math_params": {"estimated_wtp_usd_monthly": 10}},
-    "03": {"scores": {"audience_access": 6, "sales_difficulty": 5, "decision_speed": 5}},
-    "04": {"scores": {"market_timing": 6, "country_risk": 5, "local_fit": 7}},
-    "05": {"scores": {"long_term_potential": 6, "hype_dependency": 4, "obsolescence_risk": 5}},
-    "06": {"scores": {"money_potential": 5, "revenue_repeatability": 4, "monetization_scale": 4}, "math_params": {"estimated_arpu_monthly": 8, "estimated_gross_margin_pct": 70}},
-    "07": {"scores": {"marketing_difficulty": 6, "organic_growth": 5, "product_trust": 5}},
-    "08": {"scores": {"technical_feasibility": 8, "dev_speed": 7, "external_dependency": 6}, "math_params": {"mvp_weeks": 3, "needs_code_bool": 1}},
-    "09": {"scores": {"legal_safety": 6, "platform_stability": 5, "ethical_cleanliness": 7}, "math_params": {"blocking_legal_risk": 0}},
-    "10": {"scores": {"defensibility": 3, "copyability": 8, "retention_potential": 4}},
-    "11": {"scores": {"startup_practicality": 7, "validation_speed": 7, "first_sales_difficulty": 5}},
-    "12": {"scores": {"failure_risk": 6, "assumption_fragility": 6, "kill_shot_severity": 5}, "math_params": {"top_kill_factor_weight": 6}}
+    "01": {
+      "summary": "Рынок подбора мастеров занят: агрегаторы и доски объявлений покрывают спрос.",
+      "findings": ["Profi.ru и Avito Услуги — прямые субституты [S1]", "Локальные Telegram-чаты по ремонту существуют в каждом городе [S3]"],
+      "sources": [
+        {"title": "Profi.ru — категория ремонт", "url": "https://profi.ru/remont/", "confirms": "крупный агрегатор уже агрегирует мастеров с отзывами", "freshness": "2026-05", "reliability": 8, "market_match": "RU"},
+        {"title": "Avito Услуги — ремонт квартир", "url": "https://www.avito.ru/all/predlozheniya_uslug/remont_i_stroitelstvo", "confirms": "массовый канал поиска мастеров", "freshness": "2026-05", "reliability": 7, "market_match": "RU"}
+      ],
+      "hypotheses": ["Качество модерации мастеров у агрегаторов низкое — окно для нишевого продукта"],
+      "risks": ["Сильные инкумбенты с бюджетом на привлечение"],
+      "scores": {"novelty": 3, "competition_saturation": 7, "search_confidence": 7},
+      "evidence_level": 6,
+      "confidence": 6,
+      "math_params": {"direct_analogs_count": 5, "substitutes_count": 8}
+    },
+    "02": {
+      "summary": "Боль реальна, но разовая; готовность платить ДО получения услуги не доказана.",
+      "findings": ["Жалобы на недобросовестных мастеров — частый запрос на форумах [S3]", "Платят обычно за результат, а не за подбор [H0]"],
+      "sources": [
+        {"title": "Тред на форуме о поиске мастеров", "url": "https://forum.ixbt.com/topic.cgi?id=remont", "confirms": "боль с поиском надёжного мастера обсуждается", "freshness": "2026-02", "reliability": 5, "market_match": "RU"}
+      ],
+      "hypotheses": ["Собственник заплатит за подбор заранее"],
+      "risks": ["Готовность платить за посредника не подтверждена деньгами"],
+      "scores": {"pain_strength": 7, "pain_frequency": 3, "willingness_to_pay": 5, "demand_proof": 4},
+      "evidence_level": 4,
+      "confidence": 5,
+      "math_params": {"estimated_wtp_usd_monthly": 10}
+    },
+    "03": {
+      "summary": "Аудитория достижима через локальные каналы, но цикл решения редкий.",
+      "scores": {"audience_access": 6, "sales_difficulty": 5, "decision_speed": 5},
+      "evidence_level": 4,
+      "confidence": 5
+    },
+    "04": {
+      "summary": "РФ-рынок крупный, но регуляторно и платёжно рискованный для посредников.",
+      "scores": {"market_timing": 6, "country_risk": 5, "local_fit": 7},
+      "evidence_level": 4,
+      "confidence": 5
+    },
+    "05": {
+      "summary": "Спрос устойчивый, не хайповый; срок жизни идеи долгий.",
+      "scores": {"long_term_potential": 6, "hype_dependency": 4, "obsolescence_risk": 5},
+      "evidence_level": 4,
+      "confidence": 5
+    },
+    "06": {
+      "summary": "Монетизация слабо повторяемая: разовая сделка, низкий LTV.",
+      "scores": {"money_potential": 5, "revenue_repeatability": 4, "monetization_scale": 4},
+      "evidence_level": 4,
+      "confidence": 5,
+      "math_params": {"estimated_arpu_monthly": 8, "estimated_gross_margin_pct": 70}
+    },
+    "07": {
+      "summary": "Маркетинг затратен: доверие к посреднику строится медленно.",
+      "scores": {"marketing_difficulty": 6, "organic_growth": 5, "product_trust": 5},
+      "evidence_level": 3,
+      "confidence": 4
+    },
+    "08": {
+      "summary": "Технически просто: бот на готовых API, MVP за недели.",
+      "scores": {"technical_feasibility": 8, "dev_speed": 7, "external_dependency": 6},
+      "evidence_level": 6,
+      "confidence": 7,
+      "math_params": {"mvp_weeks": 3, "needs_code_bool": 1}
+    },
+    "09": {
+      "summary": "Юридически приемлемо при корректной обработке ПД и отсутствии гарантий качества работ.",
+      "scores": {"legal_safety": 6, "platform_stability": 5, "ethical_cleanliness": 7},
+      "evidence_level": 4,
+      "confidence": 5,
+      "math_params": {"blocking_legal_risk": 0}
+    },
+    "10": {
+      "summary": "Защиты почти нет: модель легко копируется агрегаторами и чатами.",
+      "scores": {"defensibility": 3, "copyability": 8, "retention_potential": 4},
+      "evidence_level": 5,
+      "confidence": 6
+    },
+    "11": {
+      "summary": "Запуск с нуля реалистичен в одном городе ручным подбором.",
+      "scores": {"startup_practicality": 7, "validation_speed": 7, "first_sales_difficulty": 5},
+      "evidence_level": 4,
+      "confidence": 5
+    },
+    "12": {
+      "summary": "Главный kill-shot: платит ли собственник за подбор до услуги. Без этого модель рушится.",
+      "scores": {"failure_risk": 6, "assumption_fragility": 6, "kill_shot_severity": 5},
+      "evidence_level": 5,
+      "confidence": 6,
+      "math_params": {"top_kill_factor_weight": 6}
+    }
   },
   "math": {
-    "13": {"evidence_index": 4, "source_quality_index": 5, "source_freshness_index": 5, "local_applicability_index": 6, "statistical_confidence_index": 4},
-    "14": {"preliminary_brs_range": {"min": 28, "base": 38, "max": 52}},
-    "15": {"outcome_map": {"total_failure_pct": 35, "small_service_income_pct": 30, "sustainable_business_pct": 20, "scalable_business_pct": 8, "external_death_pct": 7}},
-    "16": {"financial_feasibility": 5, "recurring_income_potential": 4, "scenarios": {"realistic": {"cac": 600, "ltv": 900, "churn_monthly_pct": 12}}},
-    "17": {"fragility_index": 6, "critical_assumptions": ["Готовность платить за подбор не доказана", "Низкая частота повторной покупки"]},
-    "18": {"priority_hypothesis": "Заплатит ли собственник за подбор мастера до оказания услуги"}
+    "13": {"evidence_index": 4, "source_quality_index": 5, "source_freshness_index": 5, "local_applicability_index": 6, "statistical_confidence_index": 4, "proven_theses": ["Рынок занят сильными игроками"], "unproven_theses": ["Готовность платить за подбор"], "needs_verification": ["Конверсия в предоплату"]},
+    "14": {"formula_description": "weighted geometric mean + blocking caps", "blocking_rules_triggered": [], "preliminary_brs_range": {"min": 28, "base": 38, "max": 52}},
+    "15": {
+      "scenarios": {
+        "pessimistic": {"description": "Никто не платит за подбор", "probability_pct": 35},
+        "base": {"description": "Малый сервисный доход в одном городе", "probability_pct": 40},
+        "optimistic": {"description": "Устойчивый локальный сервис", "probability_pct": 18},
+        "stress": {"description": "Агрегатор копирует фичу", "probability_pct": 7}
+      },
+      "outcome_map": {"total_failure_pct": 35, "small_service_income_pct": 30, "sustainable_business_pct": 20, "scalable_business_pct": 8, "external_death_pct": 7}
+    },
+    "16": {"financial_feasibility": 5, "recurring_income_potential": 4, "scenarios": {"bad": {"cac": 1200, "ltv": 700, "churn_monthly_pct": 20, "gross_margin_pct": 60, "payback_months": 24}, "realistic": {"cac": 600, "ltv": 900, "churn_monthly_pct": 12, "gross_margin_pct": 70, "payback_months": 10}, "good": {"cac": 300, "ltv": 1500, "churn_monthly_pct": 6, "gross_margin_pct": 80, "payback_months": 4}}, "economy_killers": ["Разовая покупка снижает LTV"]},
+    "17": {"fragility_index": 6, "critical_assumptions": ["Готовность платить за подбор не доказана", "Низкая частота повторной покупки"], "top_parameters": [{"param": "willingness_to_pay", "baseline": 5, "if_worsens": "BRS падает ниже 30", "brs_impact": "high"}], "zero_out_risks": ["Нет предоплат — нет бизнеса"]},
+    "18": {"priority_hypothesis": "Заплатит ли собственник за подбор мастера до оказания услуги", "experiments_7d": ["Лендинг с предоплатой подбора"], "experiments_30d": ["Ручной подбор в одном районе"], "success_metrics": {"prepaid_conversion_pct": 5}, "kill_criteria": ["<1% предоплат за 30 дней"]}
   }
 }
