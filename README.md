@@ -114,15 +114,33 @@ BRS = 100 × weighted_geomean(BasePotential, EvidenceFactor, SourceQuality, Exec
 
 ## Установка
 
+### Быстрый старт (рекомендуется)
+
+После копирования скилла в `.agents/skills/` запустите **одну команду** из корня проекта:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
+```
+
+Она: установит 18 субагентов во все платформы, создаст symlinks для skills, проверит установку и прогонит quality gate.
+
+Проверить только субагентов:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
+```
+
 ### Вариант 1 — клонировать в проект
 
 ```bash
 # Claude Code / Cursor / Codex — общий путь
 git clone https://github.com/2612evgenii-hue/business-idea-evaluator.git
 cp -r business-idea-evaluator/business-idea-evaluator .agents/skills/
+cp business-idea-evaluator/AGENTS.md .
+cp -r business-idea-evaluator/.cursor/rules .cursor/
 
-# Установить субагентов в каталоги платформ
-bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh
+# Установить субагентов + проверить
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
 ```
 
 ### Вариант 2 — глобально (все проекты)
@@ -147,7 +165,7 @@ npx skills add 2612evgenii-hue/business-idea-evaluator
 | Cursor | `.cursor/skills/`, `.agents/skills/` | `.cursor/agents/` |
 | Codex | `.codex/skills/`, `.agents/skills/` | `.codex/agents/` |
 
-Скрипт `install-agents.sh` раскладывает 18 субагентов: **Markdown** в `.cursor/agents/`, `.claude/agents/`, `.agents/agents/`, а для Codex **генерирует native TOML** в `.codex/agents/` через `build_codex_agents.py`.
+Скрипт `install-agents.sh` раскладывает 18 субагентов: **Markdown** в `.cursor/agents/`, `.claude/agents/`, `.agents/agents/`, а для Codex **генерирует native TOML** в `.codex/agents/` через `build_codex_agents.py`. Также создаёт symlinks `.cursor/skills/business-idea-evaluator` и `.claude/skills/business-idea-evaluator`. После установки `verify_subagents.sh` проверяет, что все 18 агентов на месте и `name` в frontmatter совпадает с именем файла.
 
 ### Установка в Claude Code
 
@@ -303,7 +321,13 @@ python3 scripts/run_calibration.py
 
 ## Проверка работоспособности
 
-Все файлы используют LF-переносы и проходят синтаксические проверки. Воспровести можно одной командой:
+Все файлы используют LF-переносы и проходят синтаксические проверки. Полная проверка (установка + quality gate):
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
+```
+
+Только quality gate (из папки скилла):
 
 ```bash
 cd business-idea-evaluator
@@ -319,7 +343,7 @@ bash tests/run_checks.sh
 == 8. Codex TOML generation (18 agents) == PASS (18 toml)
 == 9. Risk-direction regression == safe=0.50 risky=0.10 unsafe=0.20  PASS
 == 10. Blocking cap (legal_safety=2 -> cap 35) == cap applied, base = 35  PASS
-== 11. pytest suite == 10 passed  PASS
+== 11. pytest suite == 23 passed  PASS
 ALL CHECKS PASSED
 ```
 

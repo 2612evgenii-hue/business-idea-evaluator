@@ -1,40 +1,46 @@
 ---
-description: Objective, evidence-based business idea evaluation via 18 subagents and a deterministic Business Reality Score. Apply when the user asks to evaluate, validate, score, or stress-test a business idea, startup concept, SaaS idea, side project, or monetization plan.
+description: Objective, evidence-based business idea evaluation via 18 real subagents and a deterministic Business Reality Score. Apply when the user asks to evaluate, validate, score, or stress-test a business idea, startup concept, SaaS idea, side project, or monetization plan.
 alwaysApply: false
 ---
 
 # Business Idea Evaluator — Cursor rule
 
 When the user asks to evaluate / validate / score / stress-test a business idea,
-follow the skill at `business-idea-evaluator/SKILL.md`. Do not improvise a verdict.
+follow the skill at `.agents/skills/business-idea-evaluator/SKILL.md`. Do not improvise a verdict.
+
+## Pre-flight (mandatory before Phase 2)
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
+```
+
+If verification fails, run `bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh` and re-verify. **Do not start expert layer until all 18 subagents are installed in `.cursor/agents/`.**
 
 ## Hard rules
 
-1. **Do not evaluate before the idea is confirmed.** Run Phase 1 first: ask
-   **exactly 5** dependent clarifying questions, one per message, each depending
-   on the previous answer. Then output one dense `Я понял идею так: …` paragraph
-   and wait for explicit confirmation.
-2. **Use real subagents, not simulation.** Launch the 12 expert subagents
-   (`biz-eval-01..12`) in parallel via the Task/Agent tool, each in its own
-   context. Merge their JSON into the Expert Evidence Package. Then launch the 6
-   math subagents (`biz-eval-13..18`) in parallel on that package.
-3. **The score is computed, not opinion-based.** Build the merged input and run:
+1. **Do not evaluate before the idea is confirmed.** Run Phase 1 first: ask **exactly 5** dependent clarifying questions, one per message. Then output one dense `Я понял идею так: …` paragraph and wait for explicit confirmation.
+
+2. **Use real subagents, never simulation.** Launch the 12 expert subagents in **one message, 12 parallel Task invocations** using `subagent_type`:
+   - `biz-eval-01-analog-research` … `biz-eval-12-red-team`
+   Then launch 6 math subagents in parallel:
+   - `biz-eval-13-evidence-stats` … `biz-eval-18-experiments`
+   Each invocation must return JSON in its own context. **Writing expert JSON in main context without Task tool = forbidden.**
+
+3. **The score is computed, not opinion-based.** Build merged input and run:
    ```bash
-   python3 business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
-   python3 business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
+   python3 .agents/skills/business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
+   python3 .agents/skills/business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
    ```
    Use the script's BRS as authoritative. Never invent or average the score by hand.
-4. **No arithmetic mean** for the final score — the script uses a weighted
-   geometric mean plus blocking caps. Never flatter
-   (`business-idea-evaluator/references/forbidden-phrases.md`).
-5. **Mark evidence status** on every material claim. If web search is
-   unavailable, say so once and downgrade market claims to hypotheses.
 
-## Install subagents
+4. **No arithmetic mean** for the final score — the script uses weighted geometric mean plus blocking caps. Never flatter (see `references/forbidden-phrases.md`).
+
+5. **Mark evidence status** on every material claim. If web search is unavailable, say so once and downgrade market claims to hypotheses.
+
+## Install / bootstrap
 
 ```bash
-bash business-idea-evaluator/scripts/install-agents.sh
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
 ```
 
-Cursor agents land in `.cursor/agents/` (Markdown). See `AGENTS.md` and
-`business-idea-evaluator/README.md` for full details.
+Subagents land in `.cursor/agents/` (Markdown). See `AGENTS.md` for full platform matrix.

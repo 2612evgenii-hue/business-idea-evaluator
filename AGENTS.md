@@ -2,54 +2,88 @@
 
 Project guidance for agentic tools (Codex reads this file automatically; Claude Code and Cursor also honor it).
 
-## What this repo is
+## What this project provides
 
-A cross-platform Agent Skill that evaluates business ideas objectively through 18 subagents and a deterministic Business Reality Score (BRS). The skill lives in `business-idea-evaluator/`.
+A cross-platform Agent Skill that evaluates business ideas objectively through **18 real subagents** and a deterministic **Business Reality Score (BRS)**.
+
+- Skill orchestrator: `.agents/skills/business-idea-evaluator/SKILL.md`
+- Subagent definitions: `.agents/skills/business-idea-evaluator/agents/biz-eval-*.md`
+
+## First-time setup (required)
+
+Run once from project root:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
+```
+
+This installs 18 subagents into platform directories and runs the quality gate.
+
+Or step by step:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
+```
+
+### Where subagents are installed
+
+| Platform | Agents directory | Format |
+|----------|----------------|--------|
+| **Cursor** | `.cursor/agents/` | Markdown + YAML frontmatter |
+| **Claude Code** | `.claude/agents/` | Markdown + YAML frontmatter |
+| **Codex** | `.codex/agents/` | Native TOML (generated from Markdown) |
+| **Shared** | `.agents/agents/` | Markdown (fallback) |
+
+Skill discovery paths (symlinks created by installer):
+
+- `.agents/skills/business-idea-evaluator/` — canonical bundle
+- `.cursor/skills/business-idea-evaluator` → symlink
+- `.claude/skills/business-idea-evaluator` → symlink
 
 ## How to run the evaluation
 
-1. Activate the skill `business-idea-evaluator` (see `business-idea-evaluator/SKILL.md`).
-2. Phase 1: ask exactly 5 dependent clarifying questions, one per message; confirm the idea.
-3. Phase 2: launch all 12 expert subagents (`business-idea-evaluator/agents/biz-eval-01..12`).
-4. Phase 3: launch all 6 math subagents (`biz-eval-13..18`).
-5. Phase 4: validate then score:
+1. Activate skill `business-idea-evaluator` (auto-triggered on "оцени бизнес-идею" etc.).
+2. **Phase 1:** Ask exactly 5 dependent clarifying questions, one per message; confirm the idea.
+3. **Phase 2:** Launch all **12 expert** subagents in parallel via Task/Agent tool (`biz-eval-01` … `biz-eval-12`). **Never simulate in main context.**
+4. **Phase 3:** Launch all **6 math** subagents in parallel (`biz-eval-13` … `biz-eval-18`).
+5. **Phase 4:** Validate and score:
 
 ```bash
-python3 business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
-python3 business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
+python3 .agents/skills/business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
+python3 .agents/skills/business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
 ```
 
-6. Phase 5: render the final report (`business-idea-evaluator/references/report-template.md`).
+6. **Phase 5:** Render the final report (`.agents/skills/business-idea-evaluator/references/report-template.md`).
 
 ## Hard rules
 
-- Never evaluate before the idea is confirmed.
-- Never use arithmetic mean for the final score — only `calculate_brs.py` (weighted geometric mean + blocking caps).
-- Never flatter; see `business-idea-evaluator/references/forbidden-phrases.md`.
+- **Never evaluate before the idea is confirmed** (Phase 1 gate).
+- **Never simulate subagents** — each of 18 must be a separate Task/Agent invocation with its own context.
+- **Never use arithmetic mean** for the final score — only `calculate_brs.py`.
+- **Never flatter** — see `references/forbidden-phrases.md`.
 - If web search is unavailable, mark market claims as hypotheses and cap source quality.
 
-## Codex note on subagents
-
-Codex custom subagents are native TOML in `.codex/agents/` with required fields
-`name`, `description`, `developer_instructions`. This skill keeps the canonical
-subagents as Agent-Skills Markdown (`agents/*.md`) and **generates** the Codex TOML
-from them via `scripts/build_codex_agents.py`. `install-agents.sh` calls this
-automatically for any `.codex/agents` directory, so Codex gets real native TOML
-subagents (not a copy of Markdown). To regenerate manually:
+## Pre-flight before Phase 2
 
 ```bash
-python3 business-idea-evaluator/scripts/build_codex_agents.py .codex/agents
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
 ```
 
-Subagents are spawned per phase (12 expert, then 6 math). Prompt Codex explicitly
-to "spawn N agents in parallel" — Codex does not auto-spawn subagents.
+If verification fails, run `install-agents.sh` first. Do not proceed to expert layer without 18 installed subagents.
+
+## Codex note
+
+Codex custom subagents are native TOML in `.codex/agents/`. The installer generates them via `build_codex_agents.py`. Prompt Codex explicitly: *"spawn 12 expert agents in parallel"*, then *"spawn 6 math agents in parallel"* — Codex does not auto-spawn.
 
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/validate_evidence_package.py` | Validate merged input JSON (+ JSON Schema if `jsonschema` installed) |
-| `scripts/validate_input.py` | Backward-compatible alias for the validator |
+| `scripts/bootstrap.sh` | Install + verify + quality gate (one command) |
+| `scripts/install-agents.sh` | Install 18 subagents to all platform dirs |
+| `scripts/verify_subagents.sh` | Verify subagents exist and are valid |
+| `scripts/validate_evidence_package.py` | Validate merged input JSON |
 | `scripts/calculate_brs.py` | Authoritative BRS computation |
-| `scripts/build_codex_agents.py` | Generate native Codex TOML subagents from Markdown |
-| `scripts/install-agents.sh` | Install 18 subagents into Cursor/Claude (MD) and Codex (TOML) dirs |
+| `scripts/build_codex_agents.py` | Generate Codex TOML from Markdown |
+| `tests/run_checks.sh` | Full quality gate |

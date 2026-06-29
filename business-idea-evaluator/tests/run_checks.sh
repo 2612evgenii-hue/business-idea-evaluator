@@ -15,6 +15,9 @@ python3 -m py_compile scripts/validate_evidence_package.py scripts/validate_inpu
 echo "== 3. Bash syntax (install-agents.sh) =="
 bash -n scripts/install-agents.sh && echo "PASS"
 
+echo "== 3b. Bash syntax (verify_subagents.sh + bootstrap.sh) =="
+bash -n scripts/verify_subagents.sh && bash -n scripts/bootstrap.sh && echo "PASS"
+
 echo "== 4. Evidence package validation (example) =="
 python3 scripts/validate_evidence_package.py references/example-input.json >/dev/null && echo "PASS"
 
@@ -33,6 +36,24 @@ for f in agents/biz-eval-*.md; do
   grep -q '^name: biz-eval-' "$f" || { echo "FAIL $f: no name field"; fail=1; }
 done
 [ "$fail" -eq 0 ] && echo "PASS"
+
+echo "== 7b. verify_subagents.sh syntax + dry-run on skill agents source =="
+bash -n scripts/verify_subagents.sh
+# Source bundle must have 18 canonical agents
+src_n=$(ls agents/biz-eval-*.md | wc -l | tr -d ' ')
+[ "$src_n" -eq 18 ] && echo "PASS (source bundle $src_n agents)" || { echo "FAIL source bundle"; fail=1; }
+
+echo "== 7c. Project integration files (when run from installed project) =="
+PROJECT_ROOT="$(cd ../../.. && pwd)"
+if [ -f "$PROJECT_ROOT/AGENTS.md" ] && [ -f "$PROJECT_ROOT/.cursor/rules/business-idea-evaluator.mdc" ]; then
+  if bash scripts/verify_subagents.sh "$PROJECT_ROOT" 2>/dev/null; then
+    echo "PASS (project subagents verified)"
+  else
+    echo "WARN: project subagents not installed — run scripts/bootstrap.sh from project root"
+  fi
+else
+  echo "SKIP (not in full project layout)"
+fi
 
 echo "== 8. Codex TOML generation (18 agents) =="
 tmp=$(mktemp -d)

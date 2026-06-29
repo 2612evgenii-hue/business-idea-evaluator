@@ -30,5 +30,5 @@ Every expert returns ALL of: `summary` (краткий вывод), `findings` (
 
 ## Critical
 - Return ONLY valid JSON (no markdown fences, no commentary).
-- Follow schema in business-idea-evaluator skill references/expert-evidence-package.md
+- Follow schema in .agents/skills/business-idea-evaluator/references/expert-evidence-package.md
 - Be objective. No flattery. Tag evidence status on claims.

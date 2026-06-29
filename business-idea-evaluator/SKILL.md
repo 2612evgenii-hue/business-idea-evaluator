@@ -24,6 +24,33 @@ Professional analytical system. **Not** a motivational coach. Evaluate the idea,
 6. **Mark evidence status** on every material claim — see [references/evidence-status.md](references/evidence-status.md).
 7. If web search unavailable, state it once and downgrade all market claims to hypotheses.
 
+## Pre-flight — verify subagents before Phase 2
+
+**Mandatory.** Before launching any subagent, run from project root:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
+```
+
+If verification fails, install and re-verify:
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh
+```
+
+Do **not** proceed to Phase 2 until `.cursor/agents/`, `.claude/agents/`, `.agents/agents/`, and `.codex/agents/` each contain all 18 subagents. First-time setup: `bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh`
+
+## Anti-simulation gate (Phases 2–3)
+
+These actions are **forbidden** in the main agent context:
+- Writing expert or math JSON without a completed Task/Agent invocation for that agent
+- Summarizing what an expert "would say" instead of launching the subagent
+- Skipping failed agents without `failed_agents` entry and retry
+
+**Required:** 12 + 6 = **18 separate Task/Agent invocations**, each with `subagent_type` matching the agent name (e.g. `biz-eval-01-analog-research`). Launch all agents in a phase within **one message** (parallel).
+
+After each phase, briefly confirm: «Запущено N/N субагентов, получено N/N JSON-ответов» before proceeding.
+
 ## Phase 1 — Idea discovery (5 questions)
 
 See [references/discovery-protocol.md](references/discovery-protocol.md) for slot map and examples.
@@ -77,7 +104,31 @@ Launch **all 12 in parallel** (one message, 12 Task/Agent invocations). Read [re
 | `biz-eval-11-launch-zero` | 7/30/90 day launch plan |
 | `biz-eval-12-red-team` | Attack the idea |
 
-**Install agents if missing:** run `bash scripts/install-agents.sh` from skill root.
+**Install agents if missing:** run `bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh` from project root.
+
+### Cursor / Claude — Task invocation pattern
+
+One message, 12 parallel Task calls. Example for expert 01:
+
+```text
+subagent_type: biz-eval-01-analog-research
+prompt: |
+  IDEA_BRIEF:
+  <confirmed paragraph>
+
+  TASK: Execute your role per agent definition. Use web search if available.
+  Return ONLY valid JSON matching the schema in
+  .agents/skills/business-idea-evaluator/references/expert-evidence-package.md
+  for agent_id "01". Include sources with URLs when found.
+```
+
+Repeat for `biz-eval-02-pain-demand` … `biz-eval-12-red-team` in the same message.
+
+### Codex — explicit spawn
+
+Codex does not auto-spawn. Tell the user once, then run:
+1. «Spawn 12 expert agents in parallel» — agents in `.codex/agents/*.toml`
+2. After merge: «Spawn 6 math agents in parallel»
 
 ### Prompt template for each expert
 
@@ -127,8 +178,8 @@ Do not re-research market — process the package mathematically.
 2. Validate, then score:
 
 ```bash
-python3 scripts/validate_evidence_package.py biz-eval-input.json
-python3 scripts/calculate_brs.py biz-eval-input.json
+python3 .agents/skills/business-idea-evaluator/scripts/validate_evidence_package.py biz-eval-input.json
+python3 .agents/skills/business-idea-evaluator/scripts/calculate_brs.py biz-eval-input.json
 ```
 
 3. Use script output as **authoritative** Business Reality Score. Main agent explains results; does not override numbers.
@@ -159,16 +210,24 @@ Always separate: proven by sources | statistical | hypothesis | needs verificati
 
 ## Subagent installation
 
-Agents live in skill bundle at `agents/`. Install to platform dirs:
+Agents live in skill bundle at `agents/`. Full bootstrap (install + verify + tests):
+
+```bash
+bash .agents/skills/business-idea-evaluator/scripts/bootstrap.sh
+```
+
+Install only:
 
 ```bash
 bash .agents/skills/business-idea-evaluator/scripts/install-agents.sh
+bash .agents/skills/business-idea-evaluator/scripts/verify_subagents.sh
 ```
 
-Targets (when writable): `.cursor/agents/`, `.claude/agents/`, `.agents/agents/` get
-Markdown; `.codex/agents/` and `~/.codex/agents/` get **native TOML** generated from
-the Markdown via `scripts/build_codex_agents.py`. User-level `~/.cursor/agents/` and
-`~/.claude/agents/` also receive Markdown.
+Targets: `.cursor/agents/`, `.claude/agents/`, `.agents/agents/` get Markdown;
+`.codex/agents/` gets **native TOML** via `build_codex_agents.py`.
+Symlinks: `.cursor/skills/business-idea-evaluator` and `.claude/skills/business-idea-evaluator`
+→ `.agents/skills/business-idea-evaluator`. User-level `~/.cursor/agents/`,
+`~/.claude/agents/`, `~/.codex/agents/` also receive copies.
 
 ## Resume / partial runs
 

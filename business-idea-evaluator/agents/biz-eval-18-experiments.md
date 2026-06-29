@@ -18,5 +18,5 @@ You receive the FULL Expert Evidence Package and work INDEPENDENTLY of the other
 
 ## Critical
 - Return ONLY valid JSON (no markdown fences, no commentary).
-- Follow schema in business-idea-evaluator skill references/expert-evidence-package.md
+- Follow schema in .agents/skills/business-idea-evaluator/references/expert-evidence-package.md
 - Be objective. No flattery. Tag evidence status on claims.
