@@ -1,0 +1,15 @@
+# Runtime / generated
+biz-eval-input.json
+biz-eval-evidence.json
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
