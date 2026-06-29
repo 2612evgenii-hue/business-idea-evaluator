@@ -2,13 +2,23 @@
 
 ## Principle
 
-**No arithmetic mean.** Multiplicative model with blocking caps. Final number comes from `scripts/calculate_brs.py`.
+**No arithmetic mean.** The final number comes from `scripts/calculate_brs.py`.
+
+The model uses the **geometric mean** of all 9 factors, scaled to 0–100, then applies blocking caps:
 
 ```
-BRS = BasePotential × EvidenceFactor × SourceQuality × Execution × Money × Defense × Durability × RiskMultiplier × SensitivityMultiplier
+BRS = geomean(BasePotential, EvidenceFactor, SourceQuality, Execution,
+              Money, Defense, Durability, RiskMultiplier, SensitivityMultiplier) × 100
 ```
 
-Scale: 0–100 (script normalizes).
+Why geometric mean and not a raw product or arithmetic mean:
+- A raw product of nine sub-1.0 factors underflows toward 0 (a viable idea would score ~1/100).
+- An arithmetic mean hides blocking weaknesses (a fatal factor gets averaged away).
+- The geometric mean keeps the result in a usable 0–100 range, yet a single very low
+  factor still drags the score down hard. Hard blocks are enforced separately via caps below.
+
+All factors are normalized to [0,1] internally. RiskMultiplier and SensitivityMultiplier are
+penalties in [0.1, 1.0]; the rest are potentials in [0,1].
 
 ## Factor definitions (0–1 internally)
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -75,11 +76,13 @@ def compute_factors(data: dict) -> dict[str, float]:
         + 0.3 * (10 - get_score(e, "05", "hype_dependency"))
     )
 
-    max_risk = max(
-        get_score(e, "09", "legal_safety", 5),
-        get_score(e, "12", "failure_risk", 5),
-    )
-    risk_penalty = max(0.1, 1.0 - (10 - max_risk) / 10.0)
+    # Normalize "higher = safer" scores into "higher = riskier" before combining
+    # with failure_risk (which is already "higher = riskier").
+    legal_risk = 10.0 - get_score(e, "09", "legal_safety", 5)
+    platform_risk = 10.0 - get_score(e, "09", "platform_stability", 5)
+    failure_risk = get_score(e, "12", "failure_risk", 5)
+    max_risk = max(legal_risk, platform_risk, failure_risk)
+    risk_penalty = max(0.1, 1.0 - max_risk / 10.0)
 
     fragility = m.get("17", {}).get("fragility_index", get_score(e, "12", "assumption_fragility", 5))
     sensitivity_penalty = max(0.5, 1.0 - (fragility / 10.0) * 0.5)
@@ -143,22 +146,32 @@ def apply_blocking_caps(brs: float, data: dict) -> tuple[float, list[str]]:
 
 
 def compute_brs(data: dict, pessimism: float = 0.0) -> float:
-    """pessimism: 0=base, -0.15=min, +0.15=max scenario adjustment on factors."""
+    """Geometric mean of all 9 factors, scaled to 0-100.
+
+    Geometric mean is used instead of a raw product (which underflows toward 0
+    when multiplying nine sub-1.0 factors) and instead of an arithmetic mean
+    (which hides blocking weaknesses). A single very low factor still drags the
+    whole score down sharply; hard blocking caps are applied separately.
+
+    pessimism: 0=base, -0.15=min, +0.15=max scenario adjustment.
+    """
     f = compute_factors(data)
-    adj = 1.0 + pessimism
-    product = (
-        f["base_potential"]
-        * f["evidence_factor"]
-        * f["source_quality"]
-        * f["execution"]
-        * f["money"]
-        * f["defense"]
-        * f["durability"]
-        * f["risk_multiplier"]
-        * f["sensitivity_multiplier"]
-        * adj
-    )
-    return round(product * 100, 1)
+    factors = [
+        f["base_potential"],
+        f["evidence_factor"],
+        f["source_quality"],
+        f["execution"],
+        f["money"],
+        f["defense"],
+        f["durability"],
+        f["risk_multiplier"],
+        f["sensitivity_multiplier"],
+    ]
+    eps = 1e-6
+    log_sum = sum(math.log(max(x, eps)) for x in factors)
+    geo = math.exp(log_sum / len(factors))
+    geo *= 1.0 + pessimism
+    return round(min(max(geo, 0.0), 1.0) * 100, 1)
 
 
 def verdict(brs: float) -> str:
@@ -211,7 +224,7 @@ def main() -> None:
         "factors": compute_factors(data),
         "probability_outcomes": m15.get("outcome_map", {}),
         "top_uncertainty": (m17.get("critical_assumptions") or ["not computed"])[:1],
-        "formula": "BRS = BasePotential × Evidence × SourceQuality × Execution × Money × Defense × Durability × Risk × Sensitivity × 100",
+        "formula": "BRS = geomean(BasePotential, Evidence, SourceQuality, Execution, Money, Defense, Durability, RiskMultiplier, SensitivityMultiplier) × 100, then blocking caps",
     }
 
     print(json.dumps(out, ensure_ascii=False, indent=2))

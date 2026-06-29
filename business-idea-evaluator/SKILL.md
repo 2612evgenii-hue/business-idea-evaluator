@@ -120,13 +120,16 @@ Do not re-research market — process the package mathematically.
 ## Phase 4 — Deterministic BRS calculation
 
 1. Merge expert scores + math agent outputs into `biz-eval-input.json` (see [references/scoring-formula.md](references/scoring-formula.md)).
-2. Run:
+2. Validate, then score:
 
 ```bash
+python3 scripts/validate_input.py biz-eval-input.json
 python3 scripts/calculate_brs.py biz-eval-input.json
 ```
 
 3. Use script output as **authoritative** Business Reality Score. Main agent explains results; does not override numbers.
+
+A worked example input is in `examples/sample-input.json`.
 
 If script fails, fix JSON and retry. Do not invent score manually.
 

@@ -72,12 +72,14 @@ flowchart TD
 
 ## Business Reality Score
 
-Итог — **не среднее арифметическое** (оно скрывает блокирующие риски), а мультипликативная модель:
+Итог — **не среднее арифметическое** (оно скрывает блокирующие риски) и не «сырое» произведение (девять множителей < 1 схлопывают результат в ноль), а **геометрическое среднее** девяти факторов, нормированное в 0–100, с последующими блокирующими ограничениями:
 
 ```
-BRS = BasePotential × EvidenceFactor × SourceQuality × Execution × Money
-    × Defense × Durability × RiskMultiplier × SensitivityMultiplier × 100
+BRS = geomean(BasePotential, EvidenceFactor, SourceQuality, Execution, Money,
+              Defense, Durability, RiskMultiplier, SensitivityMultiplier) × 100
 ```
+
+Один очень низкий фактор всё равно резко тянет оценку вниз, а жёсткие блокировки применяются отдельно (см. ниже). Расчёт детерминирован — его делает `calculate_brs.py`, а не модель «на глаз».
 
 **Блокирующие ограничения** (примеры):
 
@@ -160,10 +162,12 @@ npx skills add 2612evgenii-hue/business-idea-evaluator
 После сбора данных субагентов:
 
 ```bash
-python3 scripts/calculate_brs.py biz-eval-input.json
+# из папки business-idea-evaluator/
+python3 scripts/validate_input.py examples/sample-input.json
+python3 scripts/calculate_brs.py examples/sample-input.json
 ```
 
-Пример входного файла — в [`references/scoring-formula.md`](business-idea-evaluator/references/scoring-formula.md).
+Готовый пример входного файла — [`examples/sample-input.json`](business-idea-evaluator/examples/sample-input.json); схема и формула — в [`references/scoring-formula.md`](business-idea-evaluator/references/scoring-formula.md).
 
 ---
 
