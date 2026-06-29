@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Canva — simple online design tool", "real_world_outcome": "success", "note": "Huge accessible audience, freemium that converts, strong retention."},
+  "idea_brief": "Browser-based drag-and-drop design tool for non-designers; freemium with paid Pro subscription for teams and brand assets.",
+  "internet_available": true,
+  "experts": {
+    "01": {"sources": [{"url": "https://www.canva.com/pricing/"}], "scores": {"novelty": 5, "competition_saturation": 6, "search_confidence": 8}},
+    "02": {"scores": {"pain_strength": 7, "pain_frequency": 8, "willingness_to_pay": 7, "demand_proof": 7}},
+    "03": {"scores": {"audience_access": 9, "sales_difficulty": 3, "decision_speed": 8}},
+    "04": {"scores": {"market_timing": 8, "country_risk": 3, "local_fit": 8}},
+    "05": {"scores": {"long_term_potential": 8, "hype_dependency": 3, "obsolescence_risk": 3}},
+    "06": {"scores": {"money_potential": 8, "revenue_repeatability": 8, "monetization_scale": 9}},
+    "07": {"scores": {"marketing_difficulty": 4, "organic_growth": 8, "product_trust": 7}},
+    "08": {"scores": {"technical_feasibility": 7, "dev_speed": 5, "external_dependency": 4}},
+    "09": {"scores": {"legal_safety": 8, "platform_stability": 7, "ethical_cleanliness": 8}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 6, "copyability": 5, "retention_potential": 8}},
+    "11": {"scores": {"startup_practicality": 6, "validation_speed": 7, "first_sales_difficulty": 4}},
+    "12": {"scores": {"failure_risk": 4, "assumption_fragility": 4, "kill_shot_severity": 4}}
+  },
+  "math": {
+    "13": {"evidence_index": 7, "source_quality_index": 7, "statistical_confidence_index": 7},
+    "16": {"scenarios": {"realistic": {"cac": 50, "ltv": 600, "gross_margin_pct": 85, "payback_months": 2}}},
+    "17": {"fragility_index": 3}
+  }
+}

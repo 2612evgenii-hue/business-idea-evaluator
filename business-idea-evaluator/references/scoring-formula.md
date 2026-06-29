@@ -80,6 +80,28 @@ is capped at 0.3 when no sources exist or `internet_available=false`.
 }
 ```
 
+## Probability map (Monte Carlo)
+
+`probability_map` is **computed, not hand-set**. The script runs N seeded
+simulations (default 2000; `--simulations N --seed N`). Each of the nine factors
+is perturbed by Gaussian noise whose width comes from the evidence base:
+
+```
+sigma = 0.05 + 0.15 × (1 − min(evidence_index, statistical_confidence_index)/10)
+            + 0.10 × (fragility_index/10)
+```
+
+Weak evidence / low confidence / high fragility → wider distribution → the model
+is openly less certain. Blocking caps apply to every draw. Output includes
+`brs_p10/p50/p90`, `brs_mean/std`, and the probability of each verdict band.
+
+## Calibration
+
+`calibration_cases/` holds known real-world ideas (success / failure / mixed).
+`scripts/run_calibration.py` (and `tests/test_calibration.py`) assert the model
+keeps `success > mixed > failure`, never rates a clear failure as TEST_NARROW, and
+never rates a clear success as DO_NOT_LAUNCH. This guards against scoring regressions.
+
 ## Output interpretation
 
 | BRS | Verdict |
@@ -89,4 +111,5 @@ is capped at 0.3 when no sources exist or `internet_available=false`.
 | 25–44 | Weak — cheap tests only |
 | 0–24 | Do not launch current form |
 
-Always report: min / base / max range, confidence, top uncertainty, top blocker.
+Always report: min / base / max range, confidence, top uncertainty, top blocker,
+and the Monte Carlo probability map.

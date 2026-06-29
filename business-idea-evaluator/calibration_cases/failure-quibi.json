@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Quibi — premium short-form mobile video", "real_world_outcome": "failure", "note": "Weak pain, no moat, paid where free alternatives win; shut in ~6 months."},
+  "idea_brief": "Subscription app for premium, professionally produced short-form video designed for mobile-only viewing.",
+  "internet_available": true,
+  "experts": {
+    "01": {"scores": {"novelty": 5, "competition_saturation": 8, "search_confidence": 6}},
+    "02": {"scores": {"pain_strength": 3, "pain_frequency": 5, "willingness_to_pay": 3, "demand_proof": 3}},
+    "03": {"scores": {"audience_access": 6, "sales_difficulty": 5, "decision_speed": 5}},
+    "04": {"scores": {"market_timing": 3, "country_risk": 3, "local_fit": 5}},
+    "05": {"scores": {"long_term_potential": 3, "hype_dependency": 7, "obsolescence_risk": 6}},
+    "06": {"scores": {"money_potential": 4, "revenue_repeatability": 5, "monetization_scale": 5}},
+    "07": {"scores": {"marketing_difficulty": 6, "organic_growth": 4, "product_trust": 5}},
+    "08": {"scores": {"technical_feasibility": 6, "dev_speed": 4, "external_dependency": 5}},
+    "09": {"scores": {"legal_safety": 7, "platform_stability": 6, "ethical_cleanliness": 7}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 3, "copyability": 7, "retention_potential": 2}},
+    "11": {"scores": {"startup_practicality": 3, "validation_speed": 4, "first_sales_difficulty": 6}},
+    "12": {"scores": {"failure_risk": 9, "assumption_fragility": 8, "kill_shot_severity": 8}}
+  },
+  "math": {
+    "13": {"evidence_index": 4, "source_quality_index": 4, "statistical_confidence_index": 4},
+    "16": {"scenarios": {"realistic": {"cac": 200, "ltv": 60, "gross_margin_pct": 40, "payback_months": 24}}},
+    "17": {"fragility_index": 7}
+  }
+}

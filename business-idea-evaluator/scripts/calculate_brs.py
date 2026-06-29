@@ -20,9 +20,13 @@ from __future__ import annotations
 
 import json
 import math
+import random
 import sys
 from pathlib import Path
 from typing import Any
+
+DEFAULT_SIMULATIONS = 2000
+DEFAULT_SEED = 42
 
 # Weights for the geometric mean. Money and risk carry more pull because a
 # business that cannot make money or is legally/operationally fatal should not
@@ -266,20 +270,94 @@ def apply_blocking_caps(brs: float, data: dict) -> tuple[float, list[str]]:
 # --------------------------------------------------------------------------- #
 
 
+def _weighted_geomean_pct(factors: dict[str, float]) -> float:
+    """Weighted geometric mean of the nine factors, scaled to 0-100 (unrounded)."""
+    weighted_log = 0.0
+    weight_sum = 0.0
+    for name, weight in FACTOR_WEIGHTS.items():
+        weighted_log += weight * math.log(max(factors[name], EPS))
+        weight_sum += weight
+    geo = math.exp(weighted_log / weight_sum)
+    return min(max(geo, 0.0), 1.0) * 100.0
+
+
 def compute_brs(data: dict, pessimism: float = 0.0) -> float:
     """Weighted geometric mean of nine factors, scaled to 0-100.
 
     pessimism shifts the result for min/max scenarios (-0.15 .. +0.15).
     """
     f = compute_factors(data)
-    weighted_log = 0.0
-    weight_sum = 0.0
-    for name, weight in FACTOR_WEIGHTS.items():
-        weighted_log += weight * math.log(max(f[name], EPS))
-        weight_sum += weight
-    geo = math.exp(weighted_log / weight_sum)
-    geo *= 1.0 + pessimism
-    return round(min(max(geo, 0.0), 1.0) * 100, 1)
+    geo = _weighted_geomean_pct(f) * (1.0 + pessimism)
+    return round(min(max(geo, 0.0), 100.0), 1)
+
+
+def uncertainty_sigma(data: dict) -> float:
+    """Spread of the Monte Carlo factor noise, driven by the evidence base.
+
+    Weak evidence / low confidence / high fragility => wider distribution =>
+    the model is openly less certain. Returned sigma is on the [0,1] factor scale.
+    """
+    m13 = data.get("math", {}).get("13", {})
+    evidence = float(m13.get("evidence_index", get_score(data.get("experts", {}), "02", "demand_proof", 3)))
+    conf = float(m13.get("statistical_confidence_index", 5))
+    fragility = float(data.get("math", {}).get("17", {}).get("fragility_index", get_score(data.get("experts", {}), "12", "assumption_fragility", 5)))
+    base = min(clamp(evidence), clamp(conf)) / 10.0
+    return 0.05 + 0.15 * (1.0 - base) + 0.10 * (clamp(fragility) / 10.0)
+
+
+def monte_carlo(data: dict, simulations: int = DEFAULT_SIMULATIONS, seed: int = DEFAULT_SEED) -> dict[str, Any]:
+    """Run N seeded simulations sampling factor uncertainty.
+
+    Each factor is perturbed by Gaussian noise whose width comes from the
+    evidence base (see uncertainty_sigma). Blocking caps are applied to every
+    draw. Returns a BRS distribution and the probability of landing in each
+    verdict band — a computed probability map, not a hand-set one.
+    """
+    rng = random.Random(seed)
+    factors = compute_factors(data)
+    sigma = uncertainty_sigma(data)
+    cap, _ = apply_blocking_caps(100.0, data)
+
+    potentials = ("base_potential", "evidence_factor", "source_quality", "execution",
+                  "money", "defense", "durability")
+    multipliers = ("risk_multiplier", "sensitivity_multiplier")
+
+    samples: list[float] = []
+    for _ in range(max(1, simulations)):
+        draw = {}
+        for name in potentials:
+            draw[name] = min(1.0, max(EPS, factors[name] + rng.gauss(0.0, sigma)))
+        for name in multipliers:
+            draw[name] = min(1.0, max(0.1, factors[name] + rng.gauss(0.0, sigma)))
+        brs = min(_weighted_geomean_pct(draw), cap)
+        samples.append(brs)
+
+    samples.sort()
+
+    def pct(p: float) -> float:
+        idx = min(len(samples) - 1, max(0, int(round(p * (len(samples) - 1)))))
+        return round(samples[idx], 1)
+
+    mean = sum(samples) / len(samples)
+    var = sum((x - mean) ** 2 for x in samples) / len(samples)
+
+    bands = {"DO_NOT_LAUNCH": 0, "CHEAP_TESTS_ONLY": 0, "REFORMULATE": 0, "TEST_NARROW_SEGMENT": 0}
+    for x in samples:
+        bands[verdict(x)] += 1
+    n = len(samples)
+    verdict_probabilities = {k: round(100.0 * v / n, 1) for k, v in bands.items()}
+
+    return {
+        "simulations": len(samples),
+        "seed": seed,
+        "sigma": round(sigma, 3),
+        "brs_mean": round(mean, 1),
+        "brs_std": round(math.sqrt(var), 1),
+        "brs_p10": pct(0.10),
+        "brs_p50": pct(0.50),
+        "brs_p90": pct(0.90),
+        "verdict_probabilities": verdict_probabilities,
+    }
 
 
 def verdict(brs: float) -> str:
@@ -340,7 +418,7 @@ def diagnose(data: dict, factors: dict[str, float], caps: list[str]) -> dict[str
     }
 
 
-def build_report(data: dict) -> dict[str, Any]:
+def build_report(data: dict, simulations: int = DEFAULT_SIMULATIONS, seed: int = DEFAULT_SEED) -> dict[str, Any]:
     warnings = validate(data)
     factors = compute_factors(data)
 
@@ -359,6 +437,7 @@ def build_report(data: dict) -> dict[str, Any]:
     hypothetical = evidence_index < 3 or factors["source_quality"] < 0.3
 
     diag = diagnose(data, factors, caps)
+    mc = monte_carlo(data, simulations=simulations, seed=seed)
 
     return {
         "business_reality_score": {
@@ -376,30 +455,49 @@ def build_report(data: dict) -> dict[str, Any]:
         "main_growth_factor": diag["main_growth_factor"],
         "main_uncertainty_factor": diag["main_uncertainty_factor"],
         "factors": factors,
-        "probability_map": m15.get("outcome_map", {}),
+        "monte_carlo": mc,
+        "probability_map": mc["verdict_probabilities"],
+        "business_outcome_map": m15.get("outcome_map", {}),
         "scenarios": m15.get("scenarios", {}),
         "warnings": warnings,
         "formula": (
             "BRS = 100 × weighted_geomean(base_potential, evidence_factor, "
             "source_quality, execution, money, defense, durability, "
-            "risk_multiplier, sensitivity_multiplier), then blocking caps"
+            "risk_multiplier, sensitivity_multiplier), then blocking caps. "
+            f"probability_map computed via {mc['simulations']} Monte Carlo simulations "
+            "(factor spread driven by the evidence base)."
         ),
     }
 
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        print("Usage: calculate_brs.py <biz-eval-input.json>", file=sys.stderr)
+    args = sys.argv[1:]
+    path_arg: str | None = None
+    simulations = DEFAULT_SIMULATIONS
+    seed = DEFAULT_SEED
+
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a in ("--simulations", "-n") and i + 1 < len(args):
+            simulations = int(args[i + 1]); i += 2; continue
+        if a == "--seed" and i + 1 < len(args):
+            seed = int(args[i + 1]); i += 2; continue
+        if not a.startswith("-"):
+            path_arg = a
+        i += 1
+
+    if path_arg is None:
+        print("Usage: calculate_brs.py <biz-eval-input.json> [--simulations N] [--seed N]", file=sys.stderr)
         sys.exit(1)
 
-    path = Path(sys.argv[1])
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(Path(path_arg).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         print(f"FATAL: cannot read/parse JSON: {exc}", file=sys.stderr)
         sys.exit(2)
 
-    print(json.dumps(build_report(data), ensure_ascii=False, indent=2))
+    print(json.dumps(build_report(data, simulations=simulations, seed=seed), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

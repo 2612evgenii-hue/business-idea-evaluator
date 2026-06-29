@@ -70,7 +70,10 @@ assert o["business_reality_score"]["base"] <= 35, "cap not applied"
 print("cap applied, base =", o["business_reality_score"]["base"], " PASS")
 PY
 
-echo "== 11. pytest suite =="
+echo "== 11. Calibration corpus (known ideas) =="
+python3 scripts/run_calibration.py | tail -2
+
+echo "== 12. pytest suite =="
 if command -v pytest >/dev/null 2>&1; then
   pytest -q && echo "PASS"
 else

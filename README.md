@@ -87,7 +87,9 @@ BRS = 100 × weighted_geomean(BasePotential, EvidenceFactor, SourceQuality, Exec
 
 Один очень низкий фактор всё равно резко тянет оценку вниз, а жёсткие блокировки применяются отдельно (см. ниже). Расчёт детерминирован — его делает `calculate_brs.py`, а не модель «на глаз».
 
-Скрипт возвращает: `base/min/max`, `confidence`, `evidence_index`, `source_quality_index`, флаг `hypothetical`, `blocking_caps_applied`, `main_blocking_risk`, `main_growth_factor`, `main_uncertainty_factor`, девять `factors`, `probability_map` и `warnings` по входу.
+Скрипт возвращает: `base/min/max`, `confidence`, `evidence_index`, `source_quality_index`, флаг `hypothetical`, `blocking_caps_applied`, `main_blocking_risk`, `main_growth_factor`, `main_uncertainty_factor`, девять `factors`, `monte_carlo` (распределение BRS), `probability_map` (вероятности по вердиктам) и `warnings` по входу.
+
+**probability_map считается, а не задаётся вручную.** `calculate_brs.py` прогоняет Monte Carlo (по умолчанию 2000 симуляций, сид фиксирован — результат воспроизводим): каждый из девяти факторов возмущается шумом, ширина которого зависит от доказательной базы (низкая доказательность / уверенность и высокая хрупкость → шире разброс → честно бóльшая неопределённость). На выходе — `brs_p10/p50/p90`, `brs_mean/std` и вероятность попасть в каждый вердикт. Число прогонов настраивается: `--simulations 10000 --seed 7`.
 
 **Блокирующие ограничения** (примеры):
 
@@ -233,9 +235,21 @@ python3 scripts/validate_evidence_package.py references/example-input.json
   "hypothetical": false,
   "main_blocking_risk": "failure_risk = 6/10",
   "main_growth_factor": "execution",
-  "main_uncertainty_factor": "Готовность платить за подбор не доказана"
+  "main_uncertainty_factor": "Готовность платить за подбор не доказана",
+  "monte_carlo": {"simulations": 2000, "seed": 42, "brs_p10": 13.6, "brs_p50": 42.3, "brs_p90": 52.8},
+  "probability_map": {"DO_NOT_LAUNCH": 15.2, "CHEAP_TESTS_ONLY": 46.4, "REFORMULATE": 38.2, "TEST_NARROW_SEGMENT": 0.2}
 }
 ```
+
+### Калибровка (защита от завышения плохих идей)
+
+Чтобы формула не завышала плохие идеи и не убивала хорошие, в [`calibration_cases/`](business-idea-evaluator/calibration_cases) лежат 12 известных идей (успешные, провальные, спорные). Раннер прогоняет их и проверяет, что `success > mixed > failure` и что провалы не попадают в верхний вердикт:
+
+```bash
+python3 scripts/run_calibration.py
+```
+
+Текущий результат: успешные (Stripe, Shopify, Canva, Duolingo) — 69–78, спорные (WeWork, Clubhouse, meal-kit, телеграм-бот) — 42–49, провальные (Juicero, Quibi, Theranos, Google Glass) — 24–30 (Theranos упирается в юридический кап). Любой регресс формулы ломает `pytest`.
 
 ---
 
@@ -263,13 +277,16 @@ python3 scripts/validate_evidence_package.py references/example-input.json
     │   ├── example-input.json             # пример входа
     │   └── example-output.json            # пример выхода
     ├── scripts/
-    │   ├── calculate_brs.py               # математический слой (обязателен)
+    │   ├── calculate_brs.py               # математический слой + Monte Carlo (обязателен)
     │   ├── validate_evidence_package.py   # валидатор входа (+ JSON Schema)
     │   ├── validate_input.py              # обратная совместимость (alias)
     │   ├── build_codex_agents.py          # генерация Codex TOML из Markdown
+    │   ├── run_calibration.py             # прогон корпуса известных идей
     │   └── install-agents.sh              # установка субагентов
+    ├── calibration_cases/                 # 12 известных идей (success/failure/mixed)
     └── tests/
-        ├── test_brs.py                    # pytest (10 проверок)
+        ├── test_brs.py                    # pytest (BRS + Monte Carlo)
+        ├── test_calibration.py            # pytest (калибровка формулы)
         └── run_checks.sh                  # полный quality gate
 ```
 

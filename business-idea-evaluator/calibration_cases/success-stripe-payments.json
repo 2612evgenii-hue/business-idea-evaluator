@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Stripe — payments API for developers", "real_world_outcome": "success", "note": "Massive willingness to pay, recurring revenue, deep integration moat."},
+  "idea_brief": "Developer-first payments API that lets online businesses accept money with a few lines of code; charge per-transaction.",
+  "internet_available": true,
+  "experts": {
+    "01": {"sources": [{"url": "https://stripe.com/pricing"}], "scores": {"novelty": 5, "competition_saturation": 6, "search_confidence": 8}},
+    "02": {"scores": {"pain_strength": 9, "pain_frequency": 9, "willingness_to_pay": 9, "demand_proof": 8}},
+    "03": {"scores": {"audience_access": 7, "sales_difficulty": 5, "decision_speed": 6}},
+    "04": {"scores": {"market_timing": 8, "country_risk": 3, "local_fit": 8}},
+    "05": {"scores": {"long_term_potential": 9, "hype_dependency": 2, "obsolescence_risk": 2}},
+    "06": {"scores": {"money_potential": 9, "revenue_repeatability": 9, "monetization_scale": 9}},
+    "07": {"scores": {"marketing_difficulty": 5, "organic_growth": 6, "product_trust": 7}},
+    "08": {"scores": {"technical_feasibility": 7, "dev_speed": 5, "external_dependency": 4}},
+    "09": {"scores": {"legal_safety": 6, "platform_stability": 7, "ethical_cleanliness": 8}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 8, "copyability": 3, "retention_potential": 9}},
+    "11": {"scores": {"startup_practicality": 6, "validation_speed": 6, "first_sales_difficulty": 5}},
+    "12": {"scores": {"failure_risk": 3, "assumption_fragility": 3, "kill_shot_severity": 3}}
+  },
+  "math": {
+    "13": {"evidence_index": 8, "source_quality_index": 8, "statistical_confidence_index": 8},
+    "16": {"scenarios": {"realistic": {"cac": 200, "ltv": 5000, "gross_margin_pct": 80, "payback_months": 3}}},
+    "17": {"fragility_index": 2}
+  }
+}

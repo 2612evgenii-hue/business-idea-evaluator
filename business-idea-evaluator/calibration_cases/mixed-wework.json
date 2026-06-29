@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "WeWork — flexible office space", "real_world_outcome": "mixed", "note": "Real demand, but thin margins, weak moat and overexpansion."},
+  "idea_brief": "Company that leases buildings long-term, renovates them, and re-rents flexible office space and memberships short-term.",
+  "internet_available": true,
+  "experts": {
+    "01": {"sources": [{"url": "https://www.wework.com"}], "scores": {"novelty": 4, "competition_saturation": 6, "search_confidence": 7}},
+    "02": {"scores": {"pain_strength": 7, "pain_frequency": 8, "willingness_to_pay": 7, "demand_proof": 7}},
+    "03": {"scores": {"audience_access": 7, "sales_difficulty": 5, "decision_speed": 6}},
+    "04": {"scores": {"market_timing": 6, "country_risk": 4, "local_fit": 7}},
+    "05": {"scores": {"long_term_potential": 6, "hype_dependency": 7, "obsolescence_risk": 4}},
+    "06": {"scores": {"money_potential": 6, "revenue_repeatability": 7, "monetization_scale": 6}},
+    "07": {"scores": {"marketing_difficulty": 5, "organic_growth": 6, "product_trust": 6}},
+    "08": {"scores": {"technical_feasibility": 5, "dev_speed": 4, "external_dependency": 5}},
+    "09": {"scores": {"legal_safety": 7, "platform_stability": 6, "ethical_cleanliness": 6}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 3, "copyability": 7, "retention_potential": 5}},
+    "11": {"scores": {"startup_practicality": 4, "validation_speed": 4, "first_sales_difficulty": 6}},
+    "12": {"scores": {"failure_risk": 7, "assumption_fragility": 7, "kill_shot_severity": 6}}
+  },
+  "math": {
+    "13": {"evidence_index": 6, "source_quality_index": 6, "statistical_confidence_index": 6},
+    "16": {"scenarios": {"realistic": {"cac": 2000, "ltv": 2500, "gross_margin_pct": 25, "payback_months": 20}}},
+    "17": {"fragility_index": 6}
+  }
+}

@@ -24,7 +24,29 @@
     "risk_multiplier": 0.4,
     "sensitivity_multiplier": 0.7
   },
+  "monte_carlo": {
+    "simulations": 2000,
+    "seed": 42,
+    "sigma": 0.2,
+    "brs_mean": 39.0,
+    "brs_std": 13.7,
+    "brs_p10": 13.6,
+    "brs_p50": 42.3,
+    "brs_p90": 52.8,
+    "verdict_probabilities": {
+      "DO_NOT_LAUNCH": 15.2,
+      "CHEAP_TESTS_ONLY": 46.4,
+      "REFORMULATE": 38.2,
+      "TEST_NARROW_SEGMENT": 0.2
+    }
+  },
   "probability_map": {
+    "DO_NOT_LAUNCH": 15.2,
+    "CHEAP_TESTS_ONLY": 46.4,
+    "REFORMULATE": 38.2,
+    "TEST_NARROW_SEGMENT": 0.2
+  },
+  "business_outcome_map": {
     "total_failure_pct": 35,
     "small_service_income_pct": 30,
     "sustainable_business_pct": 20,
@@ -50,5 +72,5 @@
     }
   },
   "warnings": [],
-  "formula": "BRS = 100 × weighted_geomean(base_potential, evidence_factor, source_quality, execution, money, defense, durability, risk_multiplier, sensitivity_multiplier), then blocking caps"
+  "formula": "BRS = 100 × weighted_geomean(base_potential, evidence_factor, source_quality, execution, money, defense, durability, risk_multiplier, sensitivity_multiplier), then blocking caps. probability_map computed via 2000 Monte Carlo simulations (factor spread driven by the evidence base)."
 }

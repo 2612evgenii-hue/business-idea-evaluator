@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Juicero — $400 Wi-Fi juice press", "real_world_outcome": "failure", "note": "No real pain; packs could be squeezed by hand. Negative unit economics."},
+  "idea_brief": "A $400 Wi-Fi-connected press that squeezes proprietary single-use juice packs sold on subscription.",
+  "internet_available": true,
+  "experts": {
+    "01": {"scores": {"novelty": 6, "competition_saturation": 4, "search_confidence": 6}},
+    "02": {"scores": {"pain_strength": 2, "pain_frequency": 3, "willingness_to_pay": 2, "demand_proof": 2}},
+    "03": {"scores": {"audience_access": 4, "sales_difficulty": 7, "decision_speed": 4}},
+    "04": {"scores": {"market_timing": 3, "country_risk": 3, "local_fit": 4}},
+    "05": {"scores": {"long_term_potential": 2, "hype_dependency": 7, "obsolescence_risk": 7}},
+    "06": {"scores": {"money_potential": 3, "revenue_repeatability": 4, "monetization_scale": 3}},
+    "07": {"scores": {"marketing_difficulty": 7, "organic_growth": 3, "product_trust": 3}},
+    "08": {"scores": {"technical_feasibility": 5, "dev_speed": 3, "external_dependency": 6}},
+    "09": {"scores": {"legal_safety": 7, "platform_stability": 6, "ethical_cleanliness": 6}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 2, "copyability": 8, "retention_potential": 2}},
+    "11": {"scores": {"startup_practicality": 3, "validation_speed": 3, "first_sales_difficulty": 7}},
+    "12": {"scores": {"failure_risk": 9, "assumption_fragility": 8, "kill_shot_severity": 9}}
+  },
+  "math": {
+    "13": {"evidence_index": 3, "source_quality_index": 3, "statistical_confidence_index": 3},
+    "16": {"scenarios": {"realistic": {"cac": 400, "ltv": 200, "gross_margin_pct": 30, "payback_months": 36}}},
+    "17": {"fragility_index": 8}
+  }
+}

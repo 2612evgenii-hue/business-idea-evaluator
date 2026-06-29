@@ -132,6 +132,32 @@ def test_missing_sources_lowers_source_quality(base_data):
     assert brs.compute_factors(without)["source_quality"] < brs.compute_factors(with_sources)["source_quality"]
 
 
+# Monte Carlo: deterministic for a fixed seed, and wider when evidence is weak.
+def test_monte_carlo_is_deterministic(base_data):
+    a = brs.monte_carlo(base_data, simulations=500, seed=42)
+    b = brs.monte_carlo(base_data, simulations=500, seed=42)
+    assert a == b
+
+
+def test_monte_carlo_probability_map_sums_to_100(base_data):
+    mc = brs.build_report(base_data)["monte_carlo"]
+    total = sum(mc["verdict_probabilities"].values())
+    assert abs(total - 100.0) < 0.5
+
+
+def test_weak_evidence_widens_distribution(base_data):
+    import copy
+    strong = copy.deepcopy(base_data)
+    strong["math"]["13"]["evidence_index"] = 9
+    strong["math"]["13"]["statistical_confidence_index"] = 9
+    strong["math"]["17"]["fragility_index"] = 1
+    weak = copy.deepcopy(base_data)
+    weak["math"]["13"]["evidence_index"] = 1
+    weak["math"]["13"]["statistical_confidence_index"] = 1
+    weak["math"]["17"]["fragility_index"] = 9
+    assert brs.uncertainty_sigma(weak) > brs.uncertainty_sigma(strong)
+
+
 # 10
 def test_formula_is_not_arithmetic_mean(base_data):
     # Construct factors with one near-zero factor: an arithmetic mean would stay

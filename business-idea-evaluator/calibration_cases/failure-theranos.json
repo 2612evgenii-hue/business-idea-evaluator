@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Theranos — blood test from a finger prick", "real_world_outcome": "failure", "note": "Core tech did not work; legal/fraud blocking risk. Must score very low."},
+  "idea_brief": "Device claiming to run hundreds of medical blood tests from a single finger-prick sample, sold to pharmacies and consumers.",
+  "internet_available": true,
+  "experts": {
+    "01": {"scores": {"novelty": 9, "competition_saturation": 4, "search_confidence": 6}},
+    "02": {"scores": {"pain_strength": 8, "pain_frequency": 6, "willingness_to_pay": 8, "demand_proof": 2}},
+    "03": {"scores": {"audience_access": 5, "sales_difficulty": 6, "decision_speed": 4}},
+    "04": {"scores": {"market_timing": 6, "country_risk": 3, "local_fit": 6}},
+    "05": {"scores": {"long_term_potential": 5, "hype_dependency": 8, "obsolescence_risk": 4}},
+    "06": {"scores": {"money_potential": 7, "revenue_repeatability": 7, "monetization_scale": 7}},
+    "07": {"scores": {"marketing_difficulty": 6, "organic_growth": 4, "product_trust": 2}},
+    "08": {"scores": {"technical_feasibility": 1, "dev_speed": 2, "external_dependency": 8}},
+    "09": {"scores": {"legal_safety": 1, "platform_stability": 3, "ethical_cleanliness": 1}, "math_params": {"blocking_legal_risk": 1}},
+    "10": {"scores": {"defensibility": 4, "copyability": 5, "retention_potential": 5}},
+    "11": {"scores": {"startup_practicality": 2, "validation_speed": 2, "first_sales_difficulty": 7}},
+    "12": {"scores": {"failure_risk": 10, "assumption_fragility": 10, "kill_shot_severity": 10}}
+  },
+  "math": {
+    "13": {"evidence_index": 2, "source_quality_index": 2, "statistical_confidence_index": 2},
+    "16": {"scenarios": {"realistic": {"cac": 1000, "ltv": 2000, "gross_margin_pct": 50, "payback_months": 18}}},
+    "17": {"fragility_index": 10}
+  }
+}

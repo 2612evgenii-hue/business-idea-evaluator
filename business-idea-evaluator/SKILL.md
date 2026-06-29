@@ -136,7 +136,9 @@ python3 scripts/calculate_brs.py biz-eval-input.json
 The script returns: `base/min/max` BRS, `confidence`, `evidence_index`,
 `source_quality_index`, `hypothetical` flag, `blocking_caps_applied`,
 `main_blocking_risk`, `main_growth_factor`, `main_uncertainty_factor`, the nine
-`factors`, the `probability_map`, and input `warnings`.
+`factors`, a `monte_carlo` block (BRS distribution from seeded simulations whose
+spread is driven by the evidence base), a computed `probability_map` (verdict-band
+probabilities), and input `warnings`. Tune runs with `--simulations N --seed N`.
 
 A worked input/output pair lives in `references/example-input.json` and
 `references/example-output.json` (also `examples/sample-input.json`).

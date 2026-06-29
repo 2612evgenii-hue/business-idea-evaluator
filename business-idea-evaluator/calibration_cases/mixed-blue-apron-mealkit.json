@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Blue Apron — meal-kit subscription", "real_world_outcome": "mixed", "note": "Real demand but high churn, low margins, easy to copy."},
+  "idea_brief": "Weekly subscription that ships pre-portioned ingredients and recipes for home cooking.",
+  "internet_available": true,
+  "experts": {
+    "01": {"sources": [{"url": "https://www.blueapron.com"}], "scores": {"novelty": 4, "competition_saturation": 7, "search_confidence": 7}},
+    "02": {"scores": {"pain_strength": 6, "pain_frequency": 7, "willingness_to_pay": 6, "demand_proof": 6}},
+    "03": {"scores": {"audience_access": 7, "sales_difficulty": 5, "decision_speed": 6}},
+    "04": {"scores": {"market_timing": 6, "country_risk": 3, "local_fit": 6}},
+    "05": {"scores": {"long_term_potential": 5, "hype_dependency": 5, "obsolescence_risk": 4}},
+    "06": {"scores": {"money_potential": 6, "revenue_repeatability": 6, "monetization_scale": 6}},
+    "07": {"scores": {"marketing_difficulty": 6, "organic_growth": 5, "product_trust": 6}},
+    "08": {"scores": {"technical_feasibility": 5, "dev_speed": 5, "external_dependency": 6}},
+    "09": {"scores": {"legal_safety": 7, "platform_stability": 7, "ethical_cleanliness": 7}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 3, "copyability": 8, "retention_potential": 3}},
+    "11": {"scores": {"startup_practicality": 5, "validation_speed": 6, "first_sales_difficulty": 5}},
+    "12": {"scores": {"failure_risk": 6, "assumption_fragility": 6, "kill_shot_severity": 6}}
+  },
+  "math": {
+    "13": {"evidence_index": 6, "source_quality_index": 6, "statistical_confidence_index": 6},
+    "16": {"scenarios": {"realistic": {"cac": 150, "ltv": 200, "gross_margin_pct": 35, "payback_months": 14}}},
+    "17": {"fragility_index": 6}
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "calibration": {"name": "Shopify — hosted e-commerce stores", "real_world_outcome": "success", "note": "Recurring SaaS + ecosystem lock-in, strong unit economics."},
+  "idea_brief": "Hosted platform that lets merchants launch and run an online store on subscription, with app ecosystem and payments revenue.",
+  "internet_available": true,
+  "experts": {
+    "01": {"sources": [{"url": "https://www.shopify.com/pricing"}], "scores": {"novelty": 4, "competition_saturation": 7, "search_confidence": 8}},
+    "02": {"scores": {"pain_strength": 8, "pain_frequency": 8, "willingness_to_pay": 8, "demand_proof": 8}},
+    "03": {"scores": {"audience_access": 7, "sales_difficulty": 5, "decision_speed": 6}},
+    "04": {"scores": {"market_timing": 8, "country_risk": 3, "local_fit": 8}},
+    "05": {"scores": {"long_term_potential": 8, "hype_dependency": 3, "obsolescence_risk": 3}},
+    "06": {"scores": {"money_potential": 9, "revenue_repeatability": 9, "monetization_scale": 9}},
+    "07": {"scores": {"marketing_difficulty": 5, "organic_growth": 6, "product_trust": 7}},
+    "08": {"scores": {"technical_feasibility": 6, "dev_speed": 4, "external_dependency": 5}},
+    "09": {"scores": {"legal_safety": 8, "platform_stability": 7, "ethical_cleanliness": 8}, "math_params": {"blocking_legal_risk": 0}},
+    "10": {"scores": {"defensibility": 7, "copyability": 4, "retention_potential": 9}},
+    "11": {"scores": {"startup_practicality": 5, "validation_speed": 6, "first_sales_difficulty": 5}},
+    "12": {"scores": {"failure_risk": 3, "assumption_fragility": 4, "kill_shot_severity": 4}}
+  },
+  "math": {
+    "13": {"evidence_index": 8, "source_quality_index": 8, "statistical_confidence_index": 8},
+    "16": {"scenarios": {"realistic": {"cac": 300, "ltv": 4000, "gross_margin_pct": 75, "payback_months": 5}}},
+    "17": {"fragility_index": 3}
+  }
+}
